@@ -1,0 +1,15 @@
+model User {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  password      String
+  full_name     String
+  level         String   @default("BEGINNER")
+  role          String   @default("USER")
+  description   String?
+  avatar_url    String?
+  nationality   String?
+  status        String   @default("UNVERIFIED")
+  created_at    DateTime @default(now())
+  updated_at    DateTime?
+  deleted_at    DateTime?
+}
