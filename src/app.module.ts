@@ -3,6 +3,9 @@ import { ConfigModule } from '@nestjs/config';
 import Joi from '@hapi/joi'; // Import Joi from '@hapi/joi'
 import { PostModule } from './post/post.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { UserModule } from './user/user.module';
+import { AuthenticationModule } from './authentication/authentication.module';
+import { MailModule } from './mail/mail.module';
 import AppConfig from './config/config';
 
 @Module({
@@ -21,6 +24,9 @@ import AppConfig from './config/config';
       load: [AppConfig],
     }),
     PrismaModule,
+    UserModule,
+    AuthenticationModule,
+    MailModule,
   ],
   controllers: [],
   providers: [],
