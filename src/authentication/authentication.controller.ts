@@ -1,15 +1,27 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import AuthenticationService from './authetication.service';
 import { APISummaries } from 'src/helpers/helpers';
-import { AuthModel } from './model/auth.model';
 import RegisterDto from './dto/register.dto';
 import { MailService } from 'src/mail/mail.service';
+import { UserModel } from 'src/user/model/user.model';
+import { AuthModel } from './model/auth.model';
+import { LoginDto } from './dto/login.dto';
+import { RefreshTokenDto } from './dto/refreshToken.dto';
+import { VerifyUserDto } from './dto/verifyUser.dto';
 
 // type UserType = Pick<user, 'role' | 'id' | 'username' | 'email'>;
 
 @Controller('auth')
-@ApiTags('AUTH')
+@ApiTags('authentications')
 export class AuthenticationController {
   constructor(
     private readonly authService: AuthenticationService,
@@ -18,7 +30,7 @@ export class AuthenticationController {
 
   @ApiOperation({ summary: APISummaries.UNAUTH })
   @HttpCode(HttpStatus.CREATED)
-  @ApiOkResponse({ type: AuthModel })
+  @ApiOkResponse({ type: UserModel })
   @Post('register')
   async register(@Body() dto: RegisterDto) {
     const response = await this.authService.registerUser(dto);
@@ -29,34 +41,30 @@ export class AuthenticationController {
     return response;
   }
 
-  // @ApiOperation({ summary: APISummaries.UNAUTH })
-  // @HttpCode(HttpStatus.OK)
-  // @ApiOkResponse({ type: AuthModel })
-  // @Post('login')
-  // login(@Body() dto: LoginDto) {
-  //   return this.authService.login(dto);
-  // }
+  @ApiOperation({ summary: APISummaries.UNAUTH })
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: AuthModel })
+  @Post('login')
+  login(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
+  }
 
-  // @ApiOperation({ summary: APISummaries.UNAUTH })
-  // @HttpCode(HttpStatus.OK)
-  // @ApiOkResponse({ type: AuthModel })
-  // @Post('refresh')
-  // refreshToken(@Body() dto: RefreshTokenDto) {
-  //   return this.authService.refreshToken(dto);
-  // }
+  @ApiOperation({ summary: APISummaries.UNAUTH })
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: AuthModel })
+  @Post('refresh')
+  refreshToken(@Body() dto: RefreshTokenDto) {
+    return this.authService.refreshToken(dto);
+  }
 
-  // @ApiOperation({ summary: APISummaries.USER })
-  // @HttpCode(HttpStatus.OK)
-  // @ApiOkResponse({ type: String })
-  // @ApiBearerAuth()
-  // @UseGuards(UserGuard)
-  // @Get('verify')
-  // verify(@Query() query: VerifyUserDto, @GetUser() user: UserType) {
-  //   return this.authService.verify(query, {
-  //     email: user.email,
-  //     username: user.username,
-  //   });
-  // }
+  @ApiOperation({ summary: APISummaries.UNAUTH })
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: String })
+  @Get('verify')
+  async verify(@Query() query: VerifyUserDto) {
+    const email = await this.authService.decodeConfirmationToken(query.token);
+    return await this.authService.verify(email);
+  }
 
   // @ApiOperation({ summary: APISummaries.UNAUTH })
   // @HttpCode(HttpStatus.OK)

@@ -3,8 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import VerificationTokenPayload from './payload/verificationToken.payload';
 import { JwtService } from '@nestjs/jwt';
-import { join } from 'path';
-import { existsSync } from 'fs';
 
 @Injectable()
 export class MailService {
