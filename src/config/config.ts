@@ -23,4 +23,9 @@ export default () => ({
     jwtVerificationExpiration:
       process.env.JWT_VERIFICATION_TOKEN_EXPIRATION_TIME,
   },
+  videosdk: {
+    apiKey: process.env.VIDEOSDK_API_KEY,
+    secretKey: process.env.VIDEOSDK_SECRET_KEY,
+    apiEndpoint: process.env.VIDEOSDK_API_ENDPOINT,
+  },
 });
