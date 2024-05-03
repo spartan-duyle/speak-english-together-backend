@@ -42,7 +42,7 @@ export function genRandomString(length = 6): string {
   return random;
 }
 
-export function PlainToInstance(model: any, response: any): any {
+export function plainToInstanceCustom(model: any, response: any): any {
   return plainToInstance(model, response, {
     excludeExtraneousValues: true,
     enableImplicitConversion: true,

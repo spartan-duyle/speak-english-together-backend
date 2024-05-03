@@ -6,7 +6,7 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaError } from 'src/utils/prismaError';
 import { PrismaService } from 'src/prisma/prisma.serivce';
 import { PostModel } from './model/post.model';
-import { PlainToInstance } from 'src/helpers/helpers';
+import { plainToInstanceCustom } from 'src/helpers/helpers';
 
 @Injectable()
 export default class PostService {
@@ -14,7 +14,7 @@ export default class PostService {
 
   async getPosts(): Promise<PostModel[]> {
     const posts = this.prismaService.post.findMany();
-    return PlainToInstance(PostModel, posts);
+    return plainToInstanceCustom(PostModel, posts);
   }
 
   async getPostById(id: number): Promise<PostModel> {
@@ -22,12 +22,12 @@ export default class PostService {
     if (!post) {
       throw new PostNotFoundException(id);
     }
-    return PlainToInstance(PostModel, post);
+    return plainToInstanceCustom(PostModel, post);
   }
 
   async createPost(createPostDto: CreatePostDto): Promise<PostModel> {
     const post = this.prismaService.post.create({ data: createPostDto });
-    return PlainToInstance(PostModel, post);
+    return plainToInstanceCustom(PostModel, post);
   }
 
   async updatePost(
@@ -44,7 +44,7 @@ export default class PostService {
           id,
         },
       });
-      return PlainToInstance(PostModel, post);
+      return plainToInstanceCustom(PostModel, post);
     } catch (error) {
       if (
         error instanceof PrismaClientKnownRequestError &&
@@ -63,7 +63,7 @@ export default class PostService {
           id,
         },
       });
-      return PlainToInstance(PostModel, post);
+      return plainToInstanceCustom(PostModel, post);
     } catch (error) {
       if (
         error instanceof PrismaClientKnownRequestError &&

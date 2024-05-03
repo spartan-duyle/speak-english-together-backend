@@ -1,5 +1,5 @@
 export type UserPayload = {
-  id: string;
+  id: number;
   fullName: string;
   avatarUrl: string;
   level: string;
