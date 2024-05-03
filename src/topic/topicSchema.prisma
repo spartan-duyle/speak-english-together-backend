@@ -1,0 +1,8 @@
+model Topic {
+  id Int @id @default(autoincrement())
+  name String
+  rooms Room[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime?
+  deletedAt DateTime?
+}

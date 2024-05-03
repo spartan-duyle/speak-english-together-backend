@@ -7,6 +7,7 @@ import { UserModule } from './user/user.module';
 import { AuthenticationModule } from './authentication/authentication.module';
 import { MailModule } from './mail/mail.module';
 import { RoomModule } from './room/room.module';
+import { TopicModule } from './topic/topic.module';
 import AppConfig from './config/config';
 
 @Module({
@@ -29,6 +30,7 @@ import AppConfig from './config/config';
     AuthenticationModule,
     MailModule,
     RoomModule,
+    TopicModule,
   ],
   controllers: [],
   providers: [],

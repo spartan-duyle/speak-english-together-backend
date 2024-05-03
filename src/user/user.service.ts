@@ -1,4 +1,4 @@
-import { PlainToInstance } from 'src/helpers/helpers';
+import { plainToInstanceCustom } from 'src/helpers/helpers';
 import { UserModel } from './model/user.model';
 import { UserNotFoundException } from './exceptions/userNotFound.exception';
 import { PrismaService } from 'src/prisma/prisma.serivce';
@@ -14,7 +14,7 @@ export default class UserService {
     if (!user) {
       throw new UserNotFoundException();
     }
-    return PlainToInstance(UserModel, user);
+    return plainToInstanceCustom(UserModel, user);
   }
 
   async markEmailAsConfirmed(email: string) {

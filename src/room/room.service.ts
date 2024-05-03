@@ -1,15 +1,23 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException, NotFoundException
+} from "@nestjs/common";
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
 import { UserPayload } from 'src/authentication/types/user.payload';
 import CreateRoomDto from './dto/createRoom.dto';
 import { PrismaService } from 'src/prisma/prisma.serivce';
+import VideoSDKTokenResponse from './response/videoSDKToken.response';
+import { plainToInstance } from 'class-transformer';
+import { plainToInstanceCustom } from '../helpers/helpers';
+import CreateRoomResponse from './response/createRoom.response';
 
 @Injectable()
 export class RoomService {
   constructor(
     private readonly configService: ConfigService,
-    private readonly prismService: PrismaService,
+    private readonly prismaService: PrismaService,
   ) {}
 
   private readonly videoSDKAPIUrl = this.configService.get(
@@ -18,7 +26,7 @@ export class RoomService {
   private readonly apiKey = this.configService.get('videosdk.apiKey');
   private readonly secretKey = this.configService.get('videosdk.secretKey');
 
-  async generateVideoSDKToken() {
+  async generateVideoSDKToken(): Promise<VideoSDKTokenResponse> {
     const options: jwt.SignOptions = {
       expiresIn: '120m',
       algorithm: 'HS256',
@@ -31,13 +39,31 @@ export class RoomService {
 
     const token = jwt.sign(payload, this.secretKey, options);
 
-    return { token };
+    return plainToInstanceCustom(VideoSDKTokenResponse, { token });
   }
 
-  async createRoom(user: UserPayload, data: CreateRoomDto) {
-    const url = `${this.videoSDKAPIUrl}/rooms`;
+  async createRoom(
+    user: UserPayload,
+    data: CreateRoomDto,
+  ): Promise<CreateRoomResponse> {
+    const createVideoSDKRoomUrl = `${this.videoSDKAPIUrl}/rooms`;
+
+    if (data.isPrivate && !data.password) {
+      throw new BadRequestException('Password is required for private rooms');
+    }
+
+    if (data.topicId !== undefined && data.topicId !== null) {
+      const topic = await this.prismaService.topic.findUnique({
+        where: { id: data.topicId },
+      });
+
+      if (!topic) {
+        throw new NotFoundException('Topic not found');
+      }
+    }
+
     try {
-      const room = await this.prismService.room.create({
+      const room = await this.prismaService.room.create({
         data: {
           name: data.name,
           host_user_id: user.id,
@@ -60,9 +86,12 @@ export class RoomService {
         body: JSON.stringify({ customRoomId: room.name }),
       };
 
-      const videoSDKRoom = await fetch(url, options);
-      const result = await videoSDKRoom.json();
-      return { room, videoSDKRoomId: result.roomId };
+      const videoSDKRoomResponse = await fetch(createVideoSDKRoomUrl, options);
+      const videoSDKRoom = await videoSDKRoomResponse.json();
+      return plainToInstanceCustom(CreateRoomResponse, {
+        ...room,
+        videoSDKRoomId: videoSDKRoom.roomId,
+      });
     } catch (error) {
       console.error('error', error);
       throw new InternalServerErrorException();
