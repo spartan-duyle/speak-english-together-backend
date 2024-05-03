@@ -19,7 +19,7 @@ export class MailService {
       expiresIn: `${this.config.get('mail.jwtVerificationExpiration')}s`,
     });
 
-    const url = `${this.config.get('app.root')}/verify?token=${token}`;
+    const url = `${this.config.get('app.root')}/verify/${token}`;
 
     await this.mailerService
       .sendMail({
