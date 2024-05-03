@@ -33,16 +33,19 @@ export default class AuthenticationService {
   );
 
   public async registerUser(registrationData: RegisterDto) {
-    const user = await this.userService.getByEmail(registrationData.email);
+    const user = await this.userService.getByEmail(
+      registrationData.email.toLowerCase(),
+    );
 
     if (user) {
-      throw new BadRequestException(ErrorMessages.USER.USER_ALREADY_EXISTS);
+      throw new BadRequestException(ErrorMessages.USER.EMAIL_ALREADY_EXISTS);
     }
 
     const hashedPassword = await bcrypt.hash(registrationData.password, 10);
     const createdUser = await this.prismaService.user.create({
       data: {
         ...registrationData,
+        email: registrationData.email.toLowerCase(),
         password: hashedPassword,
       },
     });
@@ -71,7 +74,7 @@ export default class AuthenticationService {
   }
 
   async login(dto: LoginDto) {
-    const user = await this.userService.getByEmail(dto.email);
+    const user = await this.userService.getByEmail(dto.email.toLowerCase());
 
     if (!user)
       throw new ForbiddenException(ErrorMessages.AUTH.CREDENTIALS_INCORRECT);
@@ -106,11 +109,12 @@ export default class AuthenticationService {
   }
 
   async verify(email: string) {
-    const user = await this.userService.getByEmail(email);
+    const emailLowerCase = email.toLowerCase();
+    const user = await this.userService.getByEmail(emailLowerCase);
     if (user.status !== UserStatus.UNVERIFIED) {
       throw new BadRequestException('Email already confirmed');
     }
-    await this.userService.markEmailAsConfirmed(email);
+    await this.userService.markEmailAsConfirmed(emailLowerCase);
   }
 
   public async decodeConfirmationToken(token: string) {

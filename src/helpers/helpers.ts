@@ -10,7 +10,7 @@ export const ErrorMessages = {
     USER_NOT_FOUND: 'User not found',
     USER_INVALID: 'User invalid',
     USER_INACTIVE: 'Please activate this user first',
-    USER_ALREADY_EXISTS: 'User already exists',
+    EMAIL_ALREADY_EXISTS: 'Email already exists',
   },
 };
 
