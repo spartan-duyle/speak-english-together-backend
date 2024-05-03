@@ -78,9 +78,10 @@ export default class AuthenticationService {
 
     if (!user)
       throw new ForbiddenException(ErrorMessages.AUTH.CREDENTIALS_INCORRECT);
-    if (user.deletedAt === null)
-      throw new ForbiddenException(ErrorMessages.AUTH.CREDENTIALS_INCORRECT);
-    if (user.status === UserStatus.UNVERIFIED)
+    /*
+      if the user was deleted
+     */
+    if (user.deleted_at || user.status === UserStatus.UNVERIFIED)
       throw new ForbiddenException(ErrorMessages.AUTH.CREDENTIALS_INCORRECT);
     if (user.status === UserStatus.INACTIVE)
       throw new ForbiddenException(ErrorMessages.AUTH.USER_INACTIVE);
@@ -143,6 +144,7 @@ export default class AuthenticationService {
       plainTextPassword,
       hashedPassword,
     );
+    console.log(isPasswordMatching);
     if (!isPasswordMatching) {
       throw new ForbiddenException(ErrorMessages.AUTH.CREDENTIALS_INCORRECT);
     }

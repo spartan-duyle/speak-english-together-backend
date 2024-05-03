@@ -19,7 +19,7 @@ export class UserModel {
 
   @Expose()
   @ApiProperty({ type: String })
-  fullName: string;
+  full_name: string;
 
   @Expose()
   @ApiProperty({ type: String })
@@ -35,7 +35,7 @@ export class UserModel {
 
   @Expose()
   @ApiProperty({ type: String })
-  avatarUrl: string;
+  avatar_url: string;
 
   @Expose()
   @ApiProperty({ type: String })
@@ -47,13 +47,13 @@ export class UserModel {
 
   @Expose()
   @ApiProperty({ type: Date })
-  createdAt: Date;
+  created_at: Date;
 
   @Expose()
   @ApiProperty({ type: Date })
-  updatedAt: Date;
+  updated_at: Date;
 
   @Expose()
   @ApiProperty({ type: Date })
-  deletedAt: Date;
+  deleted_at: Date;
 }
