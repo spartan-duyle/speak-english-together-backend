@@ -1,3 +1,5 @@
+import * as process from "node:process";
+
 export default () => ({
   app: {
     env: process.env.APP_ENV || 'development',
@@ -23,9 +25,18 @@ export default () => ({
     jwtVerificationExpiration:
       process.env.JWT_VERIFICATION_TOKEN_EXPIRATION_TIME,
   },
-  videosdk: {
+  videoSDK: {
     apiKey: process.env.VIDEOSDK_API_KEY,
     secretKey: process.env.VIDEOSDK_SECRET_KEY,
     apiEndpoint: process.env.VIDEOSDK_API_ENDPOINT,
+  },
+  firebaseConfig: {
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.FIREBASE_APP_ID,
+    measurementId: process.env.FIREBASE_MEASUREMENT_ID,
   },
 });
