@@ -10,6 +10,7 @@ import { RoomModule } from './room/room.module';
 import { TopicModule } from './topic/topic.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { FileModule } from './file/file.module';
+import { RoomMemberModule } from './roomMember/roomMember.module';
 import AppConfig from './config/config';
 
 @Module({
@@ -34,6 +35,7 @@ import AppConfig from './config/config';
     RoomModule,
     TopicModule,
     FileModule,
+    RoomMemberModule,
   ],
   controllers: [],
   providers: [],
