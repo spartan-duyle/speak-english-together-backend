@@ -12,4 +12,5 @@ model User {
   created_at    DateTime @default(now())
   updated_at    DateTime?
   deleted_at    DateTime?
+  room_member   RoomMember[]
 }

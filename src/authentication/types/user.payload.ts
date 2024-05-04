@@ -1,7 +1,7 @@
 export type UserPayload = {
   id: number;
-  fullName: string;
-  avatarUrl: string;
+  full_name: string;
+  avatar_url: string;
   level: string;
   email: string;
   nationality: string;
