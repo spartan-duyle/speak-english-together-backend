@@ -8,6 +8,8 @@ import { AuthenticationModule } from './authentication/authentication.module';
 import { MailModule } from './mail/mail.module';
 import { RoomModule } from './room/room.module';
 import { TopicModule } from './topic/topic.module';
+import { FirebaseModule } from './firebase/firebase.module';
+import { FileModule } from './file/file.module';
 import AppConfig from './config/config';
 
 @Module({
@@ -31,6 +33,7 @@ import AppConfig from './config/config';
     MailModule,
     RoomModule,
     TopicModule,
+    FileModule,
   ],
   controllers: [],
   providers: [],
