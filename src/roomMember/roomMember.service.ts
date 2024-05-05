@@ -14,7 +14,7 @@ export class RoomMemberService {
         is_host: data.isHost,
         avatar_url: data.avatarUrl,
         full_name: data.fullName,
-        muted: data.muted,
+        is_muted: data.isMuted,
       },
     });
   }
