@@ -144,7 +144,6 @@ export default class AuthenticationService {
       plainTextPassword,
       hashedPassword,
     );
-    console.log(isPasswordMatching);
     if (!isPasswordMatching) {
       throw new ForbiddenException(ErrorMessages.AUTH.CREDENTIALS_INCORRECT);
     }

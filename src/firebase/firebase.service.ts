@@ -6,6 +6,7 @@ import serviceAccount from './speaking-english-together-firebase-service-account
 @Injectable()
 export class FirebaseService {
   private readonly storage: admin.storage.Storage;
+  private readonly firestore: admin.firestore.Firestore;
 
   constructor() {
     const { project_id, client_email, private_key } = serviceAccount;
@@ -17,11 +18,17 @@ export class FirebaseService {
         privateKey: private_key,
       }),
       storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+      databaseURL: process.env.FIREBASE_DATABASE_URL,
     });
     this.storage = admin.storage();
+    this.firestore = admin.firestore();
   }
 
   getStorageInstance(): admin.storage.Storage {
     return this.storage;
+  }
+
+  getFirestoreInstance(): admin.firestore.Firestore {
+    return this.firestore;
   }
 }
