@@ -13,7 +13,8 @@ import VideoSDKTokenResponse from './response/videoSDKToken.response';
 import { plainToInstanceCustom } from '../helpers/helpers';
 import CreateRoomResponse from './response/createRoom.response';
 import { RoomMemberService } from '../roomMember/roomMember.service';
-import AddRoomMemberDto from '../roomMember/dto/addRoomMember.dto';
+import { FirestoreRoomMemberService } from '../firebase/firestoreRoomMember.service';
+import { AddFirestoreRoomMemberDto } from '../firebase/dto/addFirestoreRoomMember.dto';
 
 @Injectable()
 export class RoomService {
@@ -21,6 +22,7 @@ export class RoomService {
     private readonly configService: ConfigService,
     private readonly prismaService: PrismaService,
     private readonly roomMemberService: RoomMemberService,
+    private readonly firestoreRoomMemberService: FirestoreRoomMemberService,
   ) {}
 
   private readonly videoSDKAPIUrl = this.configService.get(
@@ -84,7 +86,7 @@ export class RoomService {
                 is_host: true,
                 avatar_url: user.avatar_url,
                 full_name: user.full_name,
-                muted: true,
+                is_muted: true,
               },
             ],
           },
@@ -102,6 +104,20 @@ export class RoomService {
 
       const videoSDKRoomResponse = await fetch(createVideoSDKRoomUrl, options);
       const videoSDKRoom = await videoSDKRoomResponse.json();
+
+      const addFirestoreRoomMemberData: AddFirestoreRoomMemberDto = {
+        roomId: room.id,
+        fullName: user.full_name,
+        avatarUrl: user.avatar_url,
+        userId: user.id,
+        isHost: true,
+        isMuted: true,
+      };
+
+      // sync room members to firestore
+      await this.firestoreRoomMemberService.addFirestoreRoomMember(
+        addFirestoreRoomMemberData,
+      );
 
       return plainToInstanceCustom(CreateRoomResponse, {
         ...room,
