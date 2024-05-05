@@ -4,5 +4,5 @@ export default class AddRoomMemberDto {
   isHost: boolean = false;
   avatarUrl: string;
   fullName: string;
-  muted: boolean = true;
+  isMuted: boolean = true;
 }

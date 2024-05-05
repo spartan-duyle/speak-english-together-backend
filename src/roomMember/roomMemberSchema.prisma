@@ -7,7 +7,7 @@ model RoomMember {
   left_at DateTime?
   avatar_url String?
   full_name String
-  muted Boolean @default(false)
+  is_muted Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime?
   deletedAt DateTime?
