@@ -106,23 +106,23 @@ export class RoomService {
       const videoSDKRoom = await videoSDKRoomResponse.json();
       console.log('videoSDKRoom', videoSDKRoom);
 
-      const addFirestoreRoomMemberData: AddFirestoreRoomMemberDto = {
-        roomId: room.id,
-        fullName: user.full_name,
-        avatarUrl: user.avatar_url,
-        userId: user.id,
-        isHost: true,
-        isMuted: true,
-      };
+      // const addFirestoreRoomMemberData: AddFirestoreRoomMemberDto = {
+      //   roomId: room.id,
+      //   fullName: user.full_name,
+      //   avatarUrl: user.avatar_url,
+      //   userId: user.id,
+      //   isHost: true,
+      //   isMuted: true,
+      // };
 
-      // sync room members to firestore
-      await this.firestoreRoomMemberService.addFirestoreRoomMember(
-        addFirestoreRoomMemberData,
-      );
+      // // sync room members to firestore
+      // await this.firestoreRoomMemberService.addFirestoreRoomMember(
+      //   addFirestoreRoomMemberData,
+      // );
 
       return plainToInstanceCustom(CreateRoomResponse, {
         ...room,
-        video_sdk_room_id: videoSDKRoom.id,
+        video_sdk_room_id: videoSDKRoom.roomId,
       });
     } catch (error) {
       console.error('error', error);
