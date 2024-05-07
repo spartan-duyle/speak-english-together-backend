@@ -104,6 +104,7 @@ export class RoomService {
 
       const videoSDKRoomResponse = await fetch(createVideoSDKRoomUrl, options);
       const videoSDKRoom = await videoSDKRoomResponse.json();
+      console.log('videoSDKRoom', videoSDKRoom);
 
       const addFirestoreRoomMemberData: AddFirestoreRoomMemberDto = {
         roomId: room.id,
@@ -121,7 +122,7 @@ export class RoomService {
 
       return plainToInstanceCustom(CreateRoomResponse, {
         ...room,
-        videoSDKRoomId: videoSDKRoom.roomId,
+        video_sdk_room_id: videoSDKRoom.id,
       });
     } catch (error) {
       console.error('error', error);
