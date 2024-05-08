@@ -2,7 +2,8 @@ model Topic {
   id Int @id @default(autoincrement())
   name String
   rooms Room[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime?
-  deletedAt DateTime?
+  image String?
+  created_at DateTime @default(now())
+  updated_at DateTime?
+  deleted_at DateTime?
 }

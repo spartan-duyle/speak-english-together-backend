@@ -16,10 +16,9 @@ import { RoomMemberService } from '../roomMember/roomMember.service';
 import { FirestoreRoomMemberService } from '../firebase/firestoreRoomMember.service';
 import { AddFirestoreRoomMemberDto } from '../firebase/dto/addFirestoreRoomMember.dto';
 import { Prisma } from '@prisma/client';
-import { PaginatedOutputResponse } from '../utils/pagination/paginatedOutputResponse';
 import { RoomResponse } from './response/room.response';
 import { RoomMemberDto } from '../roomMember/dto/roomMember.dto';
-import { ListRoomResponse } from "./response/listRoom.response";
+import { ListRoomResponse } from './response/listRoom.response';
 
 @Injectable()
 export class RoomService {
@@ -143,6 +142,7 @@ export class RoomService {
   ): Promise<ListRoomResponse> {
     const whereClause: Prisma.RoomWhereInput = {
       ended_at: null,
+      deleted_at: null,
       name: {
         contains: search,
       },
@@ -155,9 +155,14 @@ export class RoomService {
         room_members: {
           where: {
             left_at: null,
+            deleted_at: null,
           },
         },
-        topic: true,
+        topic: {
+          where: {
+            deleted_at: null,
+          },
+        },
       },
       take: perPage,
       skip: (page - 1) * perPage,
