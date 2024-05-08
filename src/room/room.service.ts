@@ -15,6 +15,11 @@ import CreateRoomResponse from './response/createRoom.response';
 import { RoomMemberService } from '../roomMember/roomMember.service';
 import { FirestoreRoomMemberService } from '../firebase/firestoreRoomMember.service';
 import { AddFirestoreRoomMemberDto } from '../firebase/dto/addFirestoreRoomMember.dto';
+import { Prisma } from '@prisma/client';
+import { PaginatedOutputResponse } from '../utils/pagination/paginatedOutputResponse';
+import { RoomResponse } from './response/room.response';
+import { RoomMemberDto } from '../roomMember/dto/roomMember.dto';
+import { ListRoomResponse } from "./response/listRoom.response";
 
 @Injectable()
 export class RoomService {
@@ -68,6 +73,18 @@ export class RoomService {
     }
 
     try {
+      const options = {
+        method: 'POST',
+        headers: {
+          Authorization: data.videoSDKToken,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ customRoomId: data.name }),
+      };
+
+      const videoSDKRoomResponse = await fetch(createVideoSDKRoomUrl, options);
+      const videoSDKRoom = await videoSDKRoomResponse.json();
+
       const room = await this.prismaService.room.create({
         data: {
           name: data.name,
@@ -90,21 +107,9 @@ export class RoomService {
               },
             ],
           },
+          video_sdk_room_id: videoSDKRoom.roomId,
         },
       });
-
-      const options = {
-        method: 'POST',
-        headers: {
-          Authorization: data.videoSDKToken,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ customRoomId: room.name }),
-      };
-
-      const videoSDKRoomResponse = await fetch(createVideoSDKRoomUrl, options);
-      const videoSDKRoom = await videoSDKRoomResponse.json();
-      console.log('videoSDKRoom', videoSDKRoom);
 
       // const addFirestoreRoomMemberData: AddFirestoreRoomMemberDto = {
       //   roomId: room.id,
@@ -128,5 +133,60 @@ export class RoomService {
       console.error('error', error);
       throw new InternalServerErrorException();
     }
+  }
+
+  async listActiveRooms(
+    page: number,
+    perPage: number,
+    search: string,
+    topicId: number,
+  ): Promise<ListRoomResponse> {
+    const whereClause: Prisma.RoomWhereInput = {
+      ended_at: null,
+      name: {
+        contains: search,
+      },
+      ...(topicId && { topic_id: parseInt(String(topicId)) || null }),
+    };
+
+    const rooms = await this.prismaService.room.findMany({
+      where: whereClause,
+      include: {
+        room_members: {
+          where: {
+            left_at: null,
+          },
+        },
+        topic: true,
+      },
+      take: perPage,
+      skip: (page - 1) * perPage,
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
+
+    const total = await this.prismaService.room.count({
+      where: whereClause,
+    });
+
+    const mappedRooms = rooms.map((room) => {
+      const roomResponse = plainToInstanceCustom(RoomResponse, room);
+      roomResponse.topic_name = room.topic ? room.topic.name : null; // map the topic name
+
+      // map the room_members property
+      roomResponse.room_members = room.room_members.map((member) => {
+        // transform each member into an instance of a class
+        // replace MemberClass with the actual class that represents a room member
+        return plainToInstanceCustom(RoomMemberDto, member);
+      });
+
+      return roomResponse;
+    });
+
+    return {
+      data: mappedRooms,
+      total,
+    };
   }
 }
