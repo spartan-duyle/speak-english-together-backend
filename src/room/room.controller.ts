@@ -4,17 +4,20 @@ import {
   Get,
   HttpCode,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { RoomService } from './room.service';
 import {
   ApiBearerAuth,
-  ApiBody,
+  ApiBody, ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiProperty,
+  ApiQuery,
   ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+  ApiTags, ApiUnauthorizedResponse
+} from "@nestjs/swagger";
 import { UserGuard } from 'src/authentication/guard/auth.guard';
 import { VerifiyGuard } from 'src/authentication/guard/verify.guard';
 import { UserPayload } from 'src/authentication/types/user.payload';
@@ -22,6 +25,10 @@ import { GetUser } from 'src/authentication/decorator/get-user.decorator';
 import CreateRoomDto from './dto/createRoom.dto';
 import VideoSDKTokenResponse from './response/videoSDKToken.response';
 import CreateRoomResponse from './response/createRoom.response';
+import { RoomResponse } from './response/room.response';
+import { ApiPaginatedResponse } from '../utils/pagination/apiPaginatedResponse.decorator';
+import { PaginatedOutputResponse } from '../utils/pagination/paginatedOutputResponse';
+import { ListRoomResponse } from "./response/listRoom.response";
 
 @Controller('room')
 @ApiTags('room')
@@ -62,5 +69,55 @@ export class RoomController {
     @Body() data: CreateRoomDto,
   ): Promise<CreateRoomResponse> {
     return await this.roomService.createRoom(user, data);
+  }
+
+  @Get('')
+  @ApiOperation({ summary: 'List active rooms' })
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    status: 200,
+    description: 'List of active rooms',
+    type: ListRoomResponse,
+    isArray: true,
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Page number for pagination',
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'perPage',
+    required: false,
+    description: 'Number of items per page for pagination',
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Search term for room name',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'topicId',
+    required: false,
+    description: 'ID of the topic to filter rooms by',
+    type: Number,
+  })
+  // @UseGuards(UserGuard, VerifiyGuard)
+  async listActiveRooms(
+    @Query('page') page: number = 1,
+    @Query('perPage') perPage: number = 10,
+    @Query('search') search: string = '',
+    @Query('topicId') topicId: number = null,
+  ): Promise<ListRoomResponse> {
+    return await this.roomService.listActiveRooms(
+      page,
+      perPage,
+      search,
+      topicId,
+    );
   }
 }
