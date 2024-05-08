@@ -53,6 +53,7 @@
     "passport-local": "^1.0.0",
     "pg": "^8.11.5",
     "prisma": "^5.12.1",
+    "prisma-pagination": "^0.2.3",
     "reflect-metadata": "^0.2.1",
     "rxjs": "^7.8.1",
     "slugify": "^1.6.6",

@@ -400,3 +400,7 @@ dist
 .serverless/**/*.zip
 
 prisma/schema.prisma
+
+yarn.lock
+
+package-lock.json
