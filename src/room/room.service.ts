@@ -61,8 +61,6 @@ export class RoomService {
         data.videoSDKToken,
       );
 
-      console.log('videoSDKRoomId', videoSDKRoomId);
-
       const room = await this.prismaService.room.create({
         data: {
           name: data.name,
@@ -173,10 +171,14 @@ export class RoomService {
     };
   }
 
-  async joinRoom(user: UserPayload, request: JoinRoomDto): Promise<void> {
+  async joinRoom(
+    user: UserPayload,
+    id: number,
+    request: JoinRoomDto,
+  ): Promise<void> {
     const existingActiveRoom = await this.prismaService.room.findUnique({
       where: {
-        video_sdk_room_id: request.videoSDKRoomId,
+        id: id,
         ended_at: null,
         deleted_at: null,
       },
@@ -214,7 +216,7 @@ export class RoomService {
 
     // validate videSDK room
     const isVideoSDKRoomValid = this.videoSDKService.validateRoom(
-      request.videoSDKRoomId,
+      existingActiveRoom.video_sdk_room_id,
       request.videoSDKToken,
     );
 
@@ -237,5 +239,54 @@ export class RoomService {
       fullName: user.full_name,
       isMuted: false,
     });
+  }
+
+  async leaveRoom(user: UserPayload, id: number) {
+    const existingActiveRoom = await this.prismaService.room.findUnique({
+      where: {
+        id: id,
+        ended_at: null,
+        deleted_at: null,
+      },
+    });
+
+    if (!existingActiveRoom) {
+      throw new NotFoundException('Room not found');
+    }
+
+    const roomMember = await this.roomMemberService.byRoomIdAndUserId(
+      existingActiveRoom.id,
+      user.id,
+    );
+
+    if (!roomMember) {
+      throw new NotFoundException('User not found in the room');
+    }
+
+    if (roomMember.is_host) {
+      // if the user is the host, then the room should be ended
+      await this.prismaService.room.update({
+        where: { id: existingActiveRoom.id },
+        data: {
+          ended_at: new Date(),
+          deleted_at: new Date(),
+          current_member_amount: 0,
+          updated_at: new Date(),
+        },
+      });
+    } else {
+      // if the user is not the host, then just remove the user from the room
+      // decrement the current_member_amount
+
+      await this.roomMemberService.removeRoomMember(roomMember.id);
+
+      await this.prismaService.room.update({
+        where: { id: existingActiveRoom.id },
+        data: {
+          current_member_amount: existingActiveRoom.current_member_amount - 1,
+          updated_at: new Date(),
+        },
+      });
+    }
   }
 }

@@ -3,7 +3,9 @@ import {
   Controller,
   Get,
   HttpCode,
+  Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -14,6 +16,7 @@ import {
   ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiResponse,
   ApiTags,
@@ -28,7 +31,6 @@ import VideoSDKTokenResponse from './response/videoSDKToken.response';
 import CreateRoomResponse from './response/createRoom.response';
 import { ListRoomResponse } from './response/listRoom.response';
 import { JoinRoomDto } from './dto/joinRoom.dto';
-import { RoomResponse } from './response/room.response';
 
 @Controller('room')
 @ApiTags('room')
@@ -121,15 +123,19 @@ export class RoomController {
     );
   }
 
-  @Post('join')
+  @Put(':id/join')
   @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Join a room' })
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'The ID of the room to join',
+    type: Number,
+  })
   @ApiBody({ type: JoinRoomDto })
   @ApiOkResponse({
     status: 200,
-    description: 'Joined room successfully',
-    type: RoomResponse,
   })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -137,8 +143,33 @@ export class RoomController {
   @UseGuards(UserGuard, VerifiyGuard)
   async joinRoom(
     @GetUser() user: UserPayload,
+    @Param('id') id: number,
     @Body() request: JoinRoomDto,
   ): Promise<void> {
-    await this.roomService.joinRoom(user, request);
+    await this.roomService.joinRoom(user, id, request);
+  }
+
+  @Put(':id/leave')
+  @HttpCode(200)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Leave a room' })
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'The ID of the room to leave',
+    type: Number,
+  })
+  @ApiOkResponse({
+    status: 200,
+    description: 'Left room successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @UseGuards(UserGuard, VerifiyGuard)
+  async leaveRoom(
+    @GetUser() user: UserPayload,
+    @Param('id') id: number,
+  ): Promise<void> {
+    await this.roomService.leaveRoom(user, id);
   }
 }
