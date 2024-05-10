@@ -28,4 +28,11 @@ export class RoomMemberService {
       },
     });
   }
+
+  async removeRoomMember(id: number) {
+    return this.prismaService.roomMember.update({
+      where: { id },
+      data: { deleted_at: new Date(), updated_at: new Date() },
+    });
+  }
 }
