@@ -27,9 +27,7 @@ export class VideoSDKService {
     return jwt.sign(payload, this.secretKey, options);
   }
 
-  async createRoom(
-    videoSDKToken: string,
-  ): Promise<string> {
+  async createRoom(videoSDKToken: string): Promise<string> {
     try {
       const createVideoSDKRoomUrl = `${this.videoSDKAPIUrl}/rooms`;
 
