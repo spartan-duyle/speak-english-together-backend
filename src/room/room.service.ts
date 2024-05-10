@@ -164,8 +164,8 @@ export class RoomService {
           },
         },
       },
-      take: perPage,
-      skip: (page - 1) * perPage,
+      take: parseInt(String(perPage)),
+      skip: (parseInt(String(page)) - 1) * perPage,
       orderBy: {
         created_at: 'desc',
       },
