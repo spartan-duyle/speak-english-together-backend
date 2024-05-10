@@ -46,8 +46,8 @@ export class TopicController {
   })
   @UseGuards(UserGuard, VerifiyGuard)
   async getAllTopics(
-    @Query('page') page: number = 1,
-    @Query('perPage') perPage: number = 10,
+    @Query('page') page: number = null,
+    @Query('perPage') perPage: number = null,
     @Query('search') search: string = '',
   ): Promise<ListTopicResponse> {
     return this.topicService.getAllTopics(page, perPage, search);
