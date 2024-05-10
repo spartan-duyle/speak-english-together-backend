@@ -11,6 +11,7 @@ import { TopicModule } from './topic/topic.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { FileModule } from './file/file.module';
 import { RoomMemberModule } from './roomMember/roomMember.module';
+import { VideoSDKModule } from './videoSDK/videoSDK.module';
 import AppConfig from './config/config';
 
 @Module({
@@ -36,6 +37,7 @@ import AppConfig from './config/config';
     TopicModule,
     FileModule,
     RoomMemberModule,
+    VideoSDKModule,
   ],
   controllers: [],
   providers: [],
