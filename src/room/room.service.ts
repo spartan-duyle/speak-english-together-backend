@@ -146,7 +146,7 @@ export class RoomService {
       name: {
         contains: search,
       },
-      ...(topicId && { topic_id: parseInt(String(topicId)) || null }),
+      ...(topicId && { topic_id: topicId || null }),
     };
 
     const rooms = await this.prismaService.room.findMany({
@@ -164,8 +164,8 @@ export class RoomService {
           },
         },
       },
-      take: parseInt(String(perPage)),
-      skip: (parseInt(String(page)) - 1) * perPage,
+      take: perPage || 10,
+      skip: (page - 1) * perPage || 0,
       orderBy: {
         created_at: 'desc',
       },

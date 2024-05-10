@@ -106,8 +106,8 @@ export class RoomController {
   })
   @UseGuards(UserGuard, VerifiyGuard)
   async listActiveRooms(
-    @Query('page') page: number = 1,
-    @Query('perPage') perPage: number = 10,
+    @Query('page') page: number = null,
+    @Query('perPage') perPage: number = null,
     @Query('search') search: string = '',
     @Query('topicId') topicId: number = null,
   ): Promise<ListRoomResponse> {
