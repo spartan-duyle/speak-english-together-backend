@@ -18,4 +18,14 @@ export class RoomMemberService {
       },
     });
   }
+
+  async byRoomIdAndUserId(roomId: number, userId: number) {
+    return this.prismaService.roomMember.findFirst({
+      where: {
+        room_id: roomId,
+        user_id: userId,
+        deleted_at: null,
+      },
+    });
+  }
 }

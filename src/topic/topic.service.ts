@@ -14,11 +14,11 @@ export class TopicService {
     perPage: number,
     search: string,
   ): Promise<ListTopicResponse> {
-    const skip = (page - 1) * perPage;
+    const skip = (page - 1) * perPage || 0;
 
     const topics = await this.prismaService.topic.findMany({
       skip: skip,
-      take: perPage,
+      take: perPage || 10,
       where: {
         name: {
           contains: search,

@@ -1,11 +1,11 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as jwt from 'jsonwebtoken';
 import { UserPayload } from 'src/authentication/types/user.payload';
 import CreateRoomDto from './dto/createRoom.dto';
 import { PrismaService } from 'src/prisma/prisma.serivce';
@@ -19,6 +19,8 @@ import { Prisma } from '@prisma/client';
 import { RoomResponse } from './response/room.response';
 import { RoomMemberDto } from '../roomMember/dto/roomMember.dto';
 import { ListRoomResponse } from './response/listRoom.response';
+import { JoinRoomDto } from './dto/joinRoom.dto';
+import { VideoSDKService } from '../videoSDK/videoSDK.service';
 
 @Injectable()
 export class RoomService {
@@ -27,26 +29,11 @@ export class RoomService {
     private readonly prismaService: PrismaService,
     private readonly roomMemberService: RoomMemberService,
     private readonly firestoreRoomMemberService: FirestoreRoomMemberService,
+    private readonly videoSDKService: VideoSDKService,
   ) {}
 
-  private readonly videoSDKAPIUrl = this.configService.get(
-    'videoSDK.apiEndpoint',
-  );
-  private readonly apiKey = this.configService.get('videoSDK.apiKey');
-  private readonly secretKey = this.configService.get('videoSDK.secretKey');
-
   async generateVideoSDKToken(): Promise<VideoSDKTokenResponse> {
-    const options: jwt.SignOptions = {
-      expiresIn: '120m',
-      algorithm: 'HS256',
-    };
-    const payload = {
-      apikey: this.apiKey,
-      permissions: [`allow_join`], // `ask_join` || `allow_mod`
-      version: 2, //OPTIONAL
-    };
-
-    const token = jwt.sign(payload, this.secretKey, options);
+    const token = await this.videoSDKService.generateAccessToken();
 
     return plainToInstanceCustom(VideoSDKTokenResponse, { token });
   }
@@ -55,15 +42,13 @@ export class RoomService {
     user: UserPayload,
     data: CreateRoomDto,
   ): Promise<CreateRoomResponse> {
-    const createVideoSDKRoomUrl = `${this.videoSDKAPIUrl}/rooms`;
-
     if (data.isPrivate && !data.password) {
       throw new BadRequestException('Password is required for private rooms');
     }
 
     if (data.topicId !== undefined && data.topicId !== null) {
       const topic = await this.prismaService.topic.findUnique({
-        where: { id: data.topicId },
+        where: { id: data.topicId, deleted_at: null },
       });
 
       if (!topic) {
@@ -72,17 +57,11 @@ export class RoomService {
     }
 
     try {
-      const options = {
-        method: 'POST',
-        headers: {
-          Authorization: data.videoSDKToken,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ customRoomId: data.name }),
-      };
+      const videoSDKRoomId = await this.videoSDKService.createRoom(
+        data.videoSDKToken,
+      );
 
-      const videoSDKRoomResponse = await fetch(createVideoSDKRoomUrl, options);
-      const videoSDKRoom = await videoSDKRoomResponse.json();
+      console.log('videoSDKRoomId', videoSDKRoomId);
 
       const room = await this.prismaService.room.create({
         data: {
@@ -106,7 +85,7 @@ export class RoomService {
               },
             ],
           },
-          video_sdk_room_id: videoSDKRoom.roomId,
+          video_sdk_room_id: videoSDKRoomId,
         },
       });
 
@@ -126,7 +105,6 @@ export class RoomService {
 
       return plainToInstanceCustom(CreateRoomResponse, {
         ...room,
-        video_sdk_room_id: videoSDKRoom.roomId,
       });
     } catch (error) {
       console.error('error', error);
@@ -193,5 +171,71 @@ export class RoomService {
       data: mappedRooms,
       total,
     };
+  }
+
+  async joinRoom(user: UserPayload, request: JoinRoomDto): Promise<void> {
+    const existingActiveRoom = await this.prismaService.room.findUnique({
+      where: {
+        video_sdk_room_id: request.videoSDKRoomId,
+        ended_at: null,
+        deleted_at: null,
+      },
+    });
+
+    if (!existingActiveRoom) {
+      throw new NotFoundException('Room not found');
+    }
+
+    if (existingActiveRoom.is_private) {
+      if (!request.password) {
+        throw new BadRequestException(
+          'Password is required for the private room',
+        );
+      } else if (request.password !== existingActiveRoom.password) {
+        throw new BadRequestException('Password is incorrect');
+      }
+    }
+
+    if (
+      existingActiveRoom.current_member_amount >=
+      existingActiveRoom.max_member_amount
+    ) {
+      throw new BadRequestException('Room is full');
+    }
+
+    const roomMember = await this.roomMemberService.byRoomIdAndUserId(
+      existingActiveRoom.id,
+      user.id,
+    );
+
+    if (roomMember) {
+      throw new ConflictException('User already joined the room');
+    }
+
+    // validate videSDK room
+    const isVideoSDKRoomValid = this.videoSDKService.validateRoom(
+      request.videoSDKRoomId,
+      request.videoSDKToken,
+    );
+
+    if (!isVideoSDKRoomValid) {
+      throw new BadRequestException('Can not join the room');
+    }
+
+    await this.prismaService.room.update({
+      where: { id: existingActiveRoom.id },
+      data: {
+        current_member_amount: existingActiveRoom.current_member_amount + 1,
+      },
+    });
+
+    await this.roomMemberService.addRoomMember({
+      userId: user.id,
+      roomId: existingActiveRoom.id,
+      isHost: false,
+      avatarUrl: user.avatar_url,
+      fullName: user.full_name,
+      isMuted: false,
+    });
   }
 }
