@@ -15,5 +15,5 @@ model Room {
   updated_at            DateTime?
   deleted_at            DateTime?
   room_members          RoomMember[]
-  video_sdk_room_id     String?
+  video_sdk_room_id     String? @unique
 }
