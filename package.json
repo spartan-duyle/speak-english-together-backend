@@ -4,6 +4,10 @@
   "version": "1.0.0",
   "description": "Nest TypeScript starter repository",
   "license": "MIT",
+  "prisma": {
+    "schema": "src/database/schema.prisma",
+    "migrateOutput" : "src/database/migrations/"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -17,7 +21,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/jest/bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "generate-schema": "cat src/*/*.prisma > prisma/schema.prisma",
+    "generate-schema": "cat src/database/schemaModel/*.prisma > src/database/schema.prisma",
     "migrate": "npm run generate-schema && prisma migrate dev --preview-feature --name $npm_config_name && prisma generate"
   },
   "dependencies": {
