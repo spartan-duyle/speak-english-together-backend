@@ -38,12 +38,14 @@ generator client {
   deleted_at            DateTime?
   room_members          RoomMember[]
   video_sdk_room_id     String? @unique
+  level                 String?
 }
 model Topic {
   id Int @id @default(autoincrement())
   name String @unique
   rooms Room[]
   image String?
+  content String?
   created_at DateTime @default(now())
   updated_at DateTime?
   deleted_at DateTime?

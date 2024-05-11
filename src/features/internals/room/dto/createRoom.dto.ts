@@ -47,4 +47,10 @@ export default class CreateRoomDto {
   @IsString()
   @IsNotEmpty()
   videoSDKToken: string;
+
+  @ApiProperty({ type: String, required: false, nullable: true })
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  level: string;
 }
