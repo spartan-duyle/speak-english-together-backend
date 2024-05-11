@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 import { UserStatus } from 'src/features/internals/user/enum/userStatus.enum';
 
 @Injectable()
-export class VerifiyGuard implements CanActivate {
+export class VerifyGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {

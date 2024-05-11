@@ -4,7 +4,7 @@ import { UserPayload } from '../../../authentication/types/user.payload';
 import { GetUser } from '../../../common/decorators/get-user.decorator';
 import { UserProfileResponse } from './response/userProfile.response';
 import { UserGuard } from '../../../common/guards/auth.guard';
-import { VerifiyGuard } from '../../../common/guards/verify.guard';
+import { VerifyGuard } from '../../../common/guards/verify.guard';
 import {
   ApiBearerAuth,
   ApiOkResponse,
@@ -20,7 +20,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('me')
-  @UseGuards(UserGuard, VerifiyGuard)
+  @UseGuards(UserGuard, VerifyGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get user profile' })
   @ApiOkResponse({
@@ -38,7 +38,7 @@ export class UserController {
   }
 
   @Put('me')
-  @UseGuards(UserGuard, VerifiyGuard)
+  @UseGuards(UserGuard, VerifyGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update user profile' })
   @ApiOkResponse({
@@ -57,7 +57,7 @@ export class UserController {
   }
 
   @Post('me/change-password')
-  @UseGuards(UserGuard, VerifiyGuard)
+  @UseGuards(UserGuard, VerifyGuard)
   @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Change user password' })

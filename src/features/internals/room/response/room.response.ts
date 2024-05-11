@@ -1,6 +1,7 @@
 import { Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { RoomMemberDto } from '../../roomMember/dto/roomMember.dto';
+import { TopicDto } from '@/features/internals/topic/dto/topic.dto';
 
 export class RoomResponse {
   @Expose()
@@ -16,12 +17,8 @@ export class RoomResponse {
   host_user_id: number;
 
   @Expose()
-  @ApiProperty({ type: String })
-  topic_name: string;
-
-  @Expose()
-  @ApiProperty({ type: String })
-  topic_image: string;
+  @ApiProperty({ type: TopicDto })
+  topic: TopicDto;
 
   @Expose()
   @ApiProperty({ type: String })
