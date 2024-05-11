@@ -7,11 +7,17 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiBody, ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBody,
+  ApiOkResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import AuthenticationService from './authetication.service';
 import RegisterDto from './dto/register.dto';
-import { MailService } from 'src/mail/mail.service';
-import { UserModel } from 'src/user/model/user.model';
+import { MailService } from 'src/shared/mail/mail.service';
+import { UserModel } from 'src/features/internals/user/model/user.model';
 import { AuthModel } from './model/auth.model';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refreshToken.dto';
