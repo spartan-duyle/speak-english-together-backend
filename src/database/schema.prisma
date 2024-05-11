@@ -1,0 +1,65 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+ 
+generator client {
+  provider = "prisma-client-js"
+}model RoomMember {
+  id Int @id @default(autoincrement())
+  room_id Int
+  user_id Int
+  is_host Boolean @default(false)
+  last_joined_at DateTime @default(now())
+  left_at DateTime?
+  avatar_url String?
+  full_name String
+  is_muted Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime?
+  deleted_at DateTime?
+  room Room @relation(fields: [room_id], references: [id])
+  user User @relation(fields: [user_id], references: [id])
+}model Room {
+  id                    Int      @id @default(autoincrement())
+  name                  String   
+  host_user_id          Int
+  topic                 Topic?        @relation(fields: [topic_id], references: [id])
+  topic_id              Int?
+  is_private            Boolean      @default(false)
+  password              String?
+  description           String?
+  thumbnail             String?
+  max_member_amount     Int?
+  current_member_amount Int @default(1)
+  ended_at              DateTime?
+  created_at            DateTime @default(now())
+  updated_at            DateTime?
+  deleted_at            DateTime?
+  room_members          RoomMember[]
+  video_sdk_room_id     String? @unique
+}
+model Topic {
+  id Int @id @default(autoincrement())
+  name String @unique
+  rooms Room[]
+  image String?
+  created_at DateTime @default(now())
+  updated_at DateTime?
+  deleted_at DateTime?
+}model User {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  password      String
+  full_name     String
+  level         String   @default("BEGINNER")
+  role          String   @default("USER")
+  description   String?
+  avatar_url    String?
+  nationality   String?
+  status        String   @default("UNVERIFIED")
+  created_at    DateTime @default(now())
+  updated_at    DateTime?
+  deleted_at    DateTime?
+  room_member   RoomMember[]
+}

@@ -399,7 +399,7 @@ dist
 .webpack
 .serverless/**/*.zip
 
-prisma/schema.prisma
+src/database/schema.prisma
 
 yarn.lock
 
