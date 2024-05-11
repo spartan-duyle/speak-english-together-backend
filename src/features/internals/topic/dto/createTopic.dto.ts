@@ -14,4 +14,10 @@ export class CreateTopicDto {
   @IsString()
   @IsOptional()
   image: string;
+
+  @ApiProperty({ type: String, nullable: true, required: false})
+  @Expose()
+  @IsString()
+  @IsOptional()
+  content: string;
 }

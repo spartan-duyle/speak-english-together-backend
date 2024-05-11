@@ -13,4 +13,8 @@ export class TopicDto {
   @ApiProperty({ type: String })
   @Expose()
   image: string;
+
+  @ApiProperty({ type: String })
+  @Expose()
+  content: string;
 }
