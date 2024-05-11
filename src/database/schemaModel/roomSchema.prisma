@@ -16,4 +16,5 @@ model Room {
   deleted_at            DateTime?
   room_members          RoomMember[]
   video_sdk_room_id     String? @unique
+  level                 String?
 }

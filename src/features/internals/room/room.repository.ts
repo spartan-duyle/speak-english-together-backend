@@ -40,6 +40,7 @@ export default class RoomRepository {
         thumbnail: data.thumbnail,
         max_member_amount: data.maxMemberAmount,
         current_member_amount: 1,
+        level: data.level || 'BEGINNER',
         room_members: {
           create: [
             {
