@@ -1,29 +1,24 @@
 import * as bcrypt from 'bcrypt';
 import RegisterDto from './dto/register.dto';
-import { UserNotFoundException } from 'src/user/exceptions/userNotFound.exception';
-import { UserStatus } from 'src/user/enum/userStatus.enum';
-import { PrismaService } from 'src/prisma/prisma.serivce';
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-} from '@nestjs/common';
+import { UserStatus } from 'src/features/internals/user/enum/userStatus.enum';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { pick } from 'lodash';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { ErrorMessages } from 'src/helpers/helpers';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refreshToken.dto';
-import UserService from 'src/user/user.service';
-import { UserModel } from 'src/user/model/user.model';
+import UserService from 'src/features/internals/user/user.service';
+import { UserModel } from 'src/features/internals/user/model/user.model';
+import { ErrorMessages } from '@/common/exceptions/errorMessage.exception';
+import UserRepository from '@/features/internals/user/user.repository';
 
 @Injectable()
 export default class AuthenticationService {
   constructor(
-    private readonly prismaService: PrismaService,
     private jwt: JwtService,
     private config: ConfigService,
     private readonly userService: UserService,
+    private readonly userRepo: UserRepository,
   ) {}
 
   private readonly jwtSecret = this.config.get('auth.jwtSecret');
@@ -33,7 +28,7 @@ export default class AuthenticationService {
   );
 
   public async registerUser(registrationData: RegisterDto) {
-    const user = await this.userService.getByEmail(
+    const user = await this.userRepo.byEmail(
       registrationData.email.toLowerCase(),
     );
 
@@ -41,36 +36,13 @@ export default class AuthenticationService {
       throw new BadRequestException(ErrorMessages.USER.EMAIL_ALREADY_EXISTS);
     }
 
-    const hashedPassword = await bcrypt.hash(registrationData.password, 10);
-    const createdUser = await this.prismaService.user.create({
-      data: {
-        ...registrationData,
-        email: registrationData.email.toLowerCase(),
-        password: hashedPassword,
-      },
-    });
+    registrationData.password = await bcrypt.hash(
+      registrationData.password,
+      10,
+    );
+    const createdUser = await this.userService.create(registrationData);
     createdUser.password = undefined;
     return createdUser;
-  }
-
-  public async getAuthenticatedUser(email: string, hashedPassword: string) {
-    try {
-      const user = await this.prismaService.user.findUnique({
-        where: { email },
-      });
-      if (!user) {
-        throw new UserNotFoundException();
-      }
-      if (user.status === UserStatus.UNVERIFIED) {
-        throw new Error('User not verified');
-      }
-
-      await this.verifyPassword(hashedPassword, user.password);
-      user.password = undefined;
-      return user;
-    } catch (error) {
-      throw new ForbiddenException(ErrorMessages.AUTH.CREDENTIALS_INCORRECT);
-    }
   }
 
   async login(dto: LoginDto) {
@@ -81,8 +53,9 @@ export default class AuthenticationService {
     /*
       if the user was deleted
      */
-    if (user.deleted_at || user.status === UserStatus.UNVERIFIED)
+    if (user.status === UserStatus.UNVERIFIED)
       throw new ForbiddenException(ErrorMessages.AUTH.CREDENTIALS_INCORRECT);
+
     if (user.status === UserStatus.INACTIVE)
       throw new ForbiddenException(ErrorMessages.AUTH.USER_INACTIVE);
 
@@ -112,8 +85,9 @@ export default class AuthenticationService {
   async verify(email: string) {
     const emailLowerCase = email.toLowerCase();
     const user = await this.userService.getByEmail(emailLowerCase);
+
     if (user.status !== UserStatus.UNVERIFIED) {
-      throw new BadRequestException('Email already confirmed');
+      throw new BadRequestException(ErrorMessages.USER.EMAIL_ALREADY_CONFIRMED);
     }
     await this.userService.markEmailAsConfirmed(emailLowerCase);
   }
