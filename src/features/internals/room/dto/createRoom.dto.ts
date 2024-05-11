@@ -14,8 +14,8 @@ export default class CreateRoomDto {
   name: string;
 
   @ApiProperty({ type: Number, required: true, nullable: true })
-  @IsOptional()
   @IsNumber()
+  @IsOptional()
   topicId: number;
 
   @ApiProperty({ type: Boolean, required: true, nullable: true })

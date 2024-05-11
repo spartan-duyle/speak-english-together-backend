@@ -9,7 +9,7 @@ import {
 } from '@nestjs/swagger';
 import { TopicService } from './topic.service';
 import { ListTopicResponse } from './response/listTopic.response';
-import { VerifiyGuard } from '@/common/guards/verify.guard';
+import { VerifyGuard } from '@/common/guards/verify.guard';
 import { UserGuard } from '@/common/guards/auth.guard';
 import { TopicDto } from './dto/topic.dto';
 import { CreateTopicDto } from './dto/createTopic.dto';
@@ -44,7 +44,7 @@ export class TopicController {
     description: 'Search term for topic name',
     type: String,
   })
-  @UseGuards(UserGuard, VerifiyGuard)
+  @UseGuards(UserGuard, VerifyGuard)
   async getAllTopics(
     @Query('page') page: number = null,
     @Query('perPage') perPage: number = null,
@@ -60,7 +60,7 @@ export class TopicController {
     description: 'Successfully created a new topic',
     type: TopicDto,
   })
-  @UseGuards(UserGuard, VerifiyGuard)
+  @UseGuards(UserGuard, VerifyGuard)
   async createTopic(@Body() request: CreateTopicDto): Promise<TopicDto> {
     return this.topicService.createTopic(request);
   }

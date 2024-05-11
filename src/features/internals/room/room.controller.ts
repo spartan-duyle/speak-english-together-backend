@@ -23,7 +23,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { UserGuard } from 'src/common/guards/auth.guard';
-import { VerifiyGuard } from 'src/common/guards/verify.guard';
+import { VerifyGuard } from 'src/common/guards/verify.guard';
 import { UserPayload } from 'src/authentication/types/user.payload';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import CreateRoomDto from './dto/createRoom.dto';
@@ -47,7 +47,7 @@ export class RoomController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  @UseGuards(UserGuard, VerifiyGuard)
+  @UseGuards(UserGuard, VerifyGuard)
   async generateVideoSDKToken(): Promise<VideoSDKTokenResponse> {
     return await this.roomService.generateVideoSDKToken();
   }
@@ -65,7 +65,7 @@ export class RoomController {
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  @UseGuards(UserGuard, VerifiyGuard)
+  @UseGuards(UserGuard, VerifyGuard)
   async createRoom(
     @GetUser() user: UserPayload,
     @Body() data: CreateRoomDto,
@@ -108,7 +108,7 @@ export class RoomController {
     description: 'ID of the topic to filter rooms by',
     type: Number,
   })
-  @UseGuards(UserGuard, VerifiyGuard)
+  @UseGuards(UserGuard, VerifyGuard)
   async listActiveRooms(
     @Query('page') page: number = null,
     @Query('perPage') perPage: number = null,
@@ -140,7 +140,7 @@ export class RoomController {
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  @UseGuards(UserGuard, VerifiyGuard)
+  @UseGuards(UserGuard, VerifyGuard)
   async joinRoom(
     @GetUser() user: UserPayload,
     @Param('id') id: number,
@@ -165,7 +165,7 @@ export class RoomController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  @UseGuards(UserGuard, VerifiyGuard)
+  @UseGuards(UserGuard, VerifyGuard)
   async leaveRoom(
     @GetUser() user: UserPayload,
     @Param('id') id: number,

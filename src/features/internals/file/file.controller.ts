@@ -17,7 +17,7 @@ import {
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserGuard } from '@/common/guards/auth.guard';
-import { VerifiyGuard } from '@/common/guards/verify.guard';
+import { VerifyGuard } from '@/common/guards/verify.guard';
 import { FileUploadDto } from './dto/fileUpload.dto';
 import { UploadFileResponse } from './response/uploadFile.response';
 
@@ -45,8 +45,8 @@ export class FileController {
       limits: { fileSize: 5 * 1024 * 1024 }, // limit file size to 5MB
     }),
   )
-  @UseGuards(UserGuard, VerifiyGuard)
-  @UseGuards(UserGuard, VerifiyGuard)
+  @UseGuards(UserGuard, VerifyGuard)
+  @UseGuards(UserGuard, VerifyGuard)
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
     const imageUrl = await this.fileService.uploadImage(file);
     return { imageUrl };

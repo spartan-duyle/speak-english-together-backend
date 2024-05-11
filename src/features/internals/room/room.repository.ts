@@ -33,7 +33,7 @@ export default class RoomRepository {
       data: {
         name: data.name,
         host_user_id: user.id,
-        topic_id: data.topicId,
+        topic_id: data.topicId ? data.topicId : null,
         is_private: data.isPrivate,
         description: data.description,
         password: data.password,

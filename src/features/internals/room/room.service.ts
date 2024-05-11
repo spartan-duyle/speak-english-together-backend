@@ -21,6 +21,7 @@ import { VideoSDKService } from '../../externals/videoSDK/videoSDK.service';
 import RoomRepository from '@/features/internals/room/room.repository';
 import { ErrorMessages } from '@/common/exceptions/errorMessage.exception';
 import { TopicService } from '@/features/internals/topic/topic.service';
+import { TopicDto } from '@/features/internals/topic/dto/topic.dto';
 
 @Injectable()
 export class RoomService {
@@ -46,12 +47,8 @@ export class RoomService {
       throw new BadRequestException(ErrorMessages.ROOM.PASSWORD_IS_REQUIRED);
     }
 
-    if (data.topicId !== undefined && data.topicId !== null) {
-      const topic = await this.topicService.getTopicById(data.topicId);
-
-      if (!topic) {
-        throw new NotFoundException(ErrorMessages.TOPIC.NOT_FOUND);
-      }
+    if (data.topicId) {
+      await this.topicService.getTopicById(data.topicId);
     }
 
     try {
@@ -99,9 +96,7 @@ export class RoomService {
 
     const mappedRooms = rooms.map((room) => {
       const roomResponse = plainToInstanceCustom(RoomResponse, room);
-      roomResponse.topic_name = room.topic ? room.topic.name : null; // map the topic name
-
-      roomResponse.topic_image = room.topic ? room.topic.image : null; // map the topic image
+      roomResponse.topic = plainToInstanceCustom(TopicDto, room.topic);
 
       // map the room_members property
       roomResponse.room_members = room.room_members.map((member) => {
