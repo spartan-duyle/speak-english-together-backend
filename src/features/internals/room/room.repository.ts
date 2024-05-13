@@ -125,4 +125,27 @@ export default class RoomRepository {
       },
     });
   }
+
+  async getRoomDetails(id: number) {
+    return this.prismaService.room.findUnique({
+      where: {
+        id: id,
+        deleted_at: null,
+        ended_at: null,
+      },
+      include: {
+        room_members: {
+          where: {
+            left_at: null,
+            deleted_at: null,
+          },
+        },
+        topic: {
+          where: {
+            deleted_at: null,
+          },
+        },
+      },
+    });
+  }
 }
