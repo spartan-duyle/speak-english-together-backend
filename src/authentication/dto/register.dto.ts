@@ -18,7 +18,6 @@ export class RegisterDto {
 
   @IsString()
   @IsNotEmpty()
-  @Transform(({ value }) => value.replace(/\s+/g, '_').toLowerCase())
   @ApiProperty({ type: String, required: true, nullable: false })
   full_name: string;
 
