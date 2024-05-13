@@ -205,4 +205,17 @@ export class RoomService {
       );
     }
   }
+
+  async getRoomDetails(user: UserPayload, id: number) {
+    const room = await this.roomRepository.getRoomDetails(id);
+    if (!room) {
+      throw new NotFoundException(ErrorMessages.ROOM.NOT_FOUND);
+    }
+    const roomResponse = plainToInstanceCustom(RoomResponse, room);
+    roomResponse.topic = plainToInstanceCustom(TopicDto, room.topic);
+    roomResponse.room_members = room.room_members.map((member) => {
+      return plainToInstanceCustom(RoomMemberDto, member);
+    });
+    return roomResponse;
+  }
 }
