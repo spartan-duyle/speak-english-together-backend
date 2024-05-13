@@ -36,7 +36,10 @@ export default class UserService {
     return plainToInstanceCustom(UserProfileResponse, user);
   }
 
-  async updateUserProfile(id: number, data: UpdateUserDto): Promise<UserProfileResponse> {
+  async updateUserProfile(
+    id: number,
+    data: UpdateUserDto,
+  ): Promise<UserProfileResponse> {
     const existingUser = await this.userRepository.byId(id);
 
     if (!existingUser) {
