@@ -11,6 +11,8 @@ export const ErrorMessages = {
     EMAIL_ALREADY_EXISTS: 'Email already exists',
     PASSWORD_MISMATCH: 'Password does not match',
     EMAIL_ALREADY_CONFIRMED: 'Email already confirmed',
+    CURRENT_PASSWORD_INCORRECT: 'Current password is incorrect',
+    PASSWORD_SAME: 'New password can not be the same as the current password',
   },
 
   TOPIC: {

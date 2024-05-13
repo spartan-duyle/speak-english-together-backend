@@ -65,6 +65,21 @@ export default class UserService {
       throw new NotFoundException(ErrorMessages.USER.USER_NOT_FOUND);
     }
 
+    const isCurrentPasswordMatching = await bcrypt.compare(
+      data.current_password,
+      existingUser.password,
+    );
+
+    if (!isCurrentPasswordMatching) {
+      throw new BadRequestException(
+        ErrorMessages.USER.CURRENT_PASSWORD_INCORRECT,
+      );
+    }
+
+    if (data.new_password === data.current_password) {
+      throw new BadRequestException(ErrorMessages.USER.PASSWORD_SAME);
+    }
+
     if (data.new_password !== data.confirm_password) {
       throw new BadRequestException(ErrorMessages.USER.PASSWORD_MISMATCH);
     }
