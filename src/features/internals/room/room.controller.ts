@@ -31,6 +31,7 @@ import VideoSDKTokenResponse from './response/videoSDKToken.response';
 import CreateRoomResponse from './response/createRoom.response';
 import { ListRoomResponse } from './response/listRoom.response';
 import { JoinRoomDto } from './dto/joinRoom.dto';
+import { RoomResponse } from '@/features/internals/room/response/room.response';
 
 @Controller('room')
 @ApiTags('room')
@@ -171,5 +172,30 @@ export class RoomController {
     @Param('id') id: number,
   ): Promise<void> {
     await this.roomService.leaveRoom(user, id);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get room details' })
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    status: 200,
+    description: 'Room details fetched successfully',
+    type: RoomResponse,
+  })
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'The ID of the room to get details',
+    type: Number,
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
+  @ApiOkResponse({ status: 404, description: 'Not Found' })
+  @UseGuards(UserGuard, VerifyGuard)
+  async getRoomDetails(
+    @GetUser() user: UserPayload,
+    @Param('id') id: number,
+  ): Promise<RoomResponse> {
+    return await this.roomService.getRoomDetails(user, id);
   }
 }
