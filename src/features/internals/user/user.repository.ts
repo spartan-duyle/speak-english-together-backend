@@ -65,4 +65,34 @@ export default class UserRepository {
       },
     });
   }
+
+  async getUsers(page: number, perPage: number, search: string) {
+    const data = await this.prismaService.user.findMany({
+      where: {
+        full_name: {
+          contains: search,
+        },
+        deleted_at: null,
+      },
+      take: perPage,
+      skip: (page - 1) * perPage,
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
+
+    const total = await this.prismaService.user.count({
+      where: {
+        full_name: {
+          contains: search,
+        },
+        deleted_at: null,
+      },
+    });
+
+    return {
+      data,
+      total,
+    };
+  }
 }

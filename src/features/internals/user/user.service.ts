@@ -5,12 +5,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { UserProfileResponse } from './response/userProfile.response';
+import { UserResponse } from './response/userResponse';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import * as bcrypt from 'bcrypt';
 import UserRepository from '@/features/internals/user/user.repository';
 import { ErrorMessages } from '@/common/exceptions/errorMessage.exception';
+import ListUserResponse from '@/features/internals/user/response/listUser.response';
 
 @Injectable()
 export default class UserService {
@@ -28,18 +29,18 @@ export default class UserService {
     return await this.userRepository.markEmailAsConfirmed(email);
   }
 
-  async userProfile(id: number): Promise<UserProfileResponse> {
+  async userProfile(id: number): Promise<UserResponse> {
     const user = await this.userRepository.byId(id);
     if (!user) {
       throw new NotFoundException(ErrorMessages.USER.USER_NOT_FOUND);
     }
-    return plainToInstanceCustom(UserProfileResponse, user);
+    return plainToInstanceCustom(UserResponse, user);
   }
 
   async updateUserProfile(
     id: number,
     data: UpdateUserDto,
-  ): Promise<UserProfileResponse> {
+  ): Promise<UserResponse> {
     const existingUser = await this.userRepository.byId(id);
 
     if (!existingUser) {
@@ -55,7 +56,7 @@ export default class UserService {
       data.nationality,
     );
 
-    return plainToInstanceCustom(UserProfileResponse, updatedUser);
+    return plainToInstanceCustom(UserResponse, updatedUser);
   }
 
   async changePassword(id: number, data: ChangePasswordDto): Promise<void> {
@@ -91,5 +92,24 @@ export default class UserService {
 
   async create(data: any) {
     return await this.userRepository.create(data);
+  }
+
+  async getUsers(
+    page: number,
+    perPage: number,
+    search: string,
+  ): Promise<ListUserResponse> {
+    const { data: users, total } = await this.userRepository.getUsers(
+      page || 1,
+      perPage || 10,
+      search,
+    );
+
+    return {
+      data: users.map((user) =>
+        plainToInstanceCustom(UserResponse, user),
+      ),
+      total,
+    };
   }
 }
