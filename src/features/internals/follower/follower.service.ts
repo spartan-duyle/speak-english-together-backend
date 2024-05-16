@@ -126,7 +126,6 @@ export class FollowerService {
       await this.followerRepository.byFollowerId(currentUserId);
 
     const followers: Follower[] = data.map((item) => {
-      console.log('item', item);
       const isFollowing = followingOfCurrentUser.some(
         (following) => following.followed_id === item.follower_id,
       );
