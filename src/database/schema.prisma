@@ -5,6 +5,15 @@ datasource db {
  
 generator client {
   provider = "prisma-client-js"
+}model Follower {
+  id Int @id @default(autoincrement())
+  followed_id Int
+  follower_id Int
+  created_at DateTime @default(now())
+  updated_at DateTime?
+  deleted_at DateTime?
+  followed User @relation("Followed", fields: [followed_id], references: [id])
+  follower User @relation("Follower", fields: [follower_id], references: [id])
 }model RoomMember {
   id Int @id @default(autoincrement())
   room_id Int
@@ -64,4 +73,6 @@ model Topic {
   updated_at    DateTime?
   deleted_at    DateTime?
   room_member   RoomMember[]
+  followers Follower[] @relation("Followed")
+  following Follower[] @relation("Follower")
 }

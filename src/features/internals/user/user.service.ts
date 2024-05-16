@@ -106,10 +106,14 @@ export default class UserService {
     );
 
     return {
-      data: users.map((user) =>
-        plainToInstanceCustom(UserResponse, user),
-      ),
+      data: users.map((user) => plainToInstanceCustom(UserResponse, user)),
       total,
     };
+  }
+
+  async getUserById(id: number): Promise<UserResponse> {
+    const data = await this.userRepository.byId(id);
+    console.log('data', data);
+    return plainToInstanceCustom(UserResponse, data);
   }
 }

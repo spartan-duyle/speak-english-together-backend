@@ -12,6 +12,7 @@ import { FileModule } from './features/internals/file/file.module';
 import { RoomMemberModule } from './features/internals/roomMember/roomMember.module';
 import { VideoSDKModule } from './features/externals/videoSDK/videoSDK.module';
 import AppConfig from './config/config';
+import { FollowerModule } from '@/features/internals/follower/follower.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import AppConfig from './config/config';
     FileModule,
     RoomMemberModule,
     VideoSDKModule,
+    FollowerModule,
   ],
   controllers: [],
   providers: [],

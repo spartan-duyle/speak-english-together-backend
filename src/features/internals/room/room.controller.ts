@@ -192,10 +192,7 @@ export class RoomController {
   @ApiForbiddenResponse({ description: 'Forbidden' })
   @ApiOkResponse({ status: 404, description: 'Not Found' })
   @UseGuards(UserGuard, VerifyGuard)
-  async getRoomDetails(
-    @GetUser() user: UserPayload,
-    @Param('id') id: number,
-  ): Promise<RoomResponse> {
-    return await this.roomService.getRoomDetails(user, id);
+  async getRoomDetails(@Param('id') id: number): Promise<RoomResponse> {
+    return await this.roomService.getRoomDetails(id);
   }
 }

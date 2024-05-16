@@ -29,4 +29,9 @@ export const ErrorMessages = {
     CAN_NOT_JOIN_ROOM: 'Can not join this room',
     USER_NOT_IN_ROOM: 'User not in the room',
   },
+
+  FOLLOWER: {
+    CANNOT_FOLLOW_YOURSELF: 'You cannot follow yourself',
+    USER_NOT_FOLLOWED: 'User not followed',
+  },
 };
