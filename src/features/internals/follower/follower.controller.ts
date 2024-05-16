@@ -73,12 +73,14 @@ export class FollowerController {
   async getFollowers(
     @GetUser() user: UserPayload,
     @Param('userId') userId: number,
+    @Query('search') search: string = '',
     @Query('page') page: number = null,
     @Query('perPage') perPage: number = null,
   ): Promise<ListFollowerResponse> {
     return await this.followerService.getFollowers(
       user.id,
       userId,
+      search,
       page,
       perPage,
     );
@@ -100,10 +102,12 @@ export class FollowerController {
     @Param('userId') userId: number,
     @Query('page') page: number = null,
     @Query('perPage') perPage: number = null,
+    @Query('search') search: string = '',
   ): Promise<ListFollowingResponse> {
     return await this.followerService.getFollowing(
       user.id,
       userId,
+      search,
       page,
       perPage,
     );

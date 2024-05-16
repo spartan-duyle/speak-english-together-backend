@@ -73,9 +73,18 @@ export default class UserRepository {
   async getUsers(page: number, perPage: number, search: string) {
     const data = await this.prismaService.user.findMany({
       where: {
-        full_name: {
-          contains: search,
-        },
+        OR: [
+          {
+            full_name: {
+              contains: search,
+            },
+          },
+          {
+            email: {
+              contains: search,
+            },
+          },
+        ],
         deleted_at: null,
       },
       take: perPage,
@@ -87,9 +96,18 @@ export default class UserRepository {
 
     const total = await this.prismaService.user.count({
       where: {
-        full_name: {
-          contains: search,
-        },
+        OR: [
+          {
+            full_name: {
+              contains: search,
+            },
+          },
+          {
+            email: {
+              contains: search,
+            },
+          },
+        ],
         deleted_at: null,
       },
     });
