@@ -113,7 +113,6 @@ export default class UserService {
 
   async getUserById(id: number): Promise<UserResponse> {
     const data = await this.userRepository.byId(id);
-    console.log('data', data);
     return plainToInstanceCustom(UserResponse, data);
   }
 }
