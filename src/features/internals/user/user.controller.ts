@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  Param,
   Post,
   Put,
   Query,
@@ -16,9 +17,11 @@ import { UserGuard } from '@/common/guards/auth.guard';
 import { VerifyGuard } from '@/common/guards/verify.guard';
 import {
   ApiBearerAuth,
+  ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { ChangePasswordDto } from './dto/changePassword.dto';
@@ -38,9 +41,8 @@ export class UserController {
     description: 'User profile fetched successfully',
     type: UserResponse,
   })
-  @ApiOkResponse({ status: 401, description: 'Unauthorized' })
-  @ApiOkResponse({ status: 403, description: 'Forbidden' })
-  @ApiOkResponse({ status: 404, description: 'Not Found' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
   async userProfile(@GetUser() user: UserPayload): Promise<UserResponse> {
     return await this.userService.userProfile(user.id);
   }
@@ -54,9 +56,8 @@ export class UserController {
     description: 'User profile updated successfully',
     type: UserResponse,
   })
-  @ApiOkResponse({ status: 401, description: 'Unauthorized' })
-  @ApiOkResponse({ status: 403, description: 'Forbidden' })
-  @ApiOkResponse({ status: 404, description: 'Not Found' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
   async updateUserProfile(
     @GetUser() user: UserPayload,
     @Body() data: UpdateUserDto,
@@ -73,9 +74,8 @@ export class UserController {
     status: 200,
     description: 'Password changed successfully',
   })
-  @ApiOkResponse({ status: 401, description: 'Unauthorized' })
-  @ApiOkResponse({ status: 403, description: 'Forbidden' })
-  @ApiOkResponse({ status: 404, description: 'Not Found' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
   async changePassword(
     @GetUser() user: UserPayload,
     @Body() data: ChangePasswordDto,
@@ -92,13 +92,28 @@ export class UserController {
     type: ListUserResponse,
     description: 'List of users fetched successfully',
   })
-  @ApiOkResponse({ status: 401, description: 'Unauthorized' })
-  @ApiOkResponse({ status: 403, description: 'Forbidden' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
   async getUsers(
     @Query('page') page: number = null,
     @Query('perPage') perPage: number = null,
     @Query('search') search: string = '',
   ): Promise<ListUserResponse> {
     return await this.userService.getUsers(page, perPage, search);
+  }
+
+  @Get(':id')
+  @UseGuards(UserGuard, VerifyGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get user by id' })
+  @ApiOkResponse({
+    status: 200,
+    description: 'User fetched successfully',
+    type: UserResponse,
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
+  async getUserById(@Param('id') id: number): Promise<UserResponse> {
+    return await this.userService.getUserById(id);
   }
 }

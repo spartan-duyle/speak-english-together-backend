@@ -206,7 +206,7 @@ export class RoomService {
     }
   }
 
-  async getRoomDetails(user: UserPayload, id: number) {
+  async getRoomDetails(id: number) {
     const room = await this.roomRepository.getRoomDetails(id);
     if (!room) {
       throw new NotFoundException(ErrorMessages.ROOM.NOT_FOUND);

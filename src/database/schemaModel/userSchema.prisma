@@ -13,4 +13,6 @@ model User {
   updated_at    DateTime?
   deleted_at    DateTime?
   room_member   RoomMember[]
+  followers Follower[] @relation("Followed")
+  following Follower[] @relation("Follower")
 }
