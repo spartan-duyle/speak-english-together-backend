@@ -23,6 +23,10 @@ export default class UserRepository {
   async byId(id: number) {
     return this.prismaService.user.findUnique({
       where: { id: id, deleted_at: null },
+      include: {
+        followers: true,
+        following: true,
+      },
     });
   }
 
