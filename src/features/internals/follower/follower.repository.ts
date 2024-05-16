@@ -32,11 +32,30 @@ export default class FollowerRepository {
     });
   }
 
-  async getFollowers(followedId: number, page: number, perPage: number) {
+  async getFollowers(
+    followedId: number,
+    search: string,
+    page: number,
+    perPage: number,
+  ) {
     const data = await this.prismaService.follower.findMany({
       where: {
         followed_id: followedId,
         deleted_at: null,
+        follower: {
+          OR: [
+            {
+              full_name: {
+                contains: search,
+              },
+            },
+            {
+              email: {
+                contains: search,
+              },
+            },
+          ],
+        },
       },
       include: {
         follower: true,
@@ -49,6 +68,20 @@ export default class FollowerRepository {
       where: {
         followed_id: followedId,
         deleted_at: null,
+        followed: {
+          OR: [
+            {
+              full_name: {
+                contains: search,
+              },
+            },
+            {
+              email: {
+                contains: search,
+              },
+            },
+          ],
+        },
       },
     });
 
@@ -67,11 +100,30 @@ export default class FollowerRepository {
     });
   }
 
-  async getFollowing(userId: number, page: number, perPage: number) {
+  async getFollowing(
+    userId: number,
+    search: string,
+    page: number,
+    perPage: number,
+  ) {
     const data = await this.prismaService.follower.findMany({
       where: {
         follower_id: userId,
         deleted_at: null,
+        followed: {
+          OR: [
+            {
+              full_name: {
+                contains: search,
+              },
+            },
+            {
+              email: {
+                contains: search,
+              },
+            },
+          ],
+        },
       },
       include: {
         followed: true,
@@ -84,6 +136,20 @@ export default class FollowerRepository {
       where: {
         follower_id: userId,
         deleted_at: null,
+        followed: {
+          OR: [
+            {
+              full_name: {
+                contains: search,
+              },
+            },
+            {
+              email: {
+                contains: search,
+              },
+            },
+          ],
+        },
       },
     });
 
