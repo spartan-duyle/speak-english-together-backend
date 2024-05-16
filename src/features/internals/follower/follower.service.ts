@@ -104,17 +104,20 @@ export class FollowerService {
    *
    * @param currentUserId
    * @param userId
+   * @param search
    * @param page
    * @param perPage
    */
   async getFollowers(
     currentUserId: number,
     userId: number,
+    search: string,
     page: number,
     perPage: number,
   ): Promise<ListFollowerResponse> {
     const { data, total } = await this.followerRepository.getFollowers(
       userId,
+      search,
       page | 1,
       perPage | 10,
     );
@@ -123,7 +126,6 @@ export class FollowerService {
       await this.followerRepository.byFollowerId(currentUserId);
 
     const followers: Follower[] = data.map((item) => {
-      console.log('item', item);
       const isFollowing = followingOfCurrentUser.some(
         (following) => following.followed_id === item.follower_id,
       );
@@ -145,11 +147,13 @@ export class FollowerService {
   async getFollowing(
     currentUserId: number,
     userId: number,
+    search: string,
     page: number,
     perPage: number,
   ): Promise<ListFollowingResponse> {
     const { data, total } = await this.followerRepository.getFollowing(
       userId,
+      search,
       page | 1,
       perPage | 10,
     );
