@@ -21,4 +21,8 @@ export class RoomMemberService {
   async isUserJoiningAnotherRoom(userId: number) {
     return await this.roomMemberRepository.isUserJoiningAnotherRoom(userId);
   }
+
+  async removeManyMember(roomId: any) {
+    return this.roomMemberRepository.batchDelete(roomId);
+  }
 }
