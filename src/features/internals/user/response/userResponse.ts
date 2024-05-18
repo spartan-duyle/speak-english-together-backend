@@ -34,4 +34,12 @@ export default class UserResponse {
   @ApiProperty({ type: Boolean })
   @Expose()
   is_following: boolean = true;
+
+  @ApiProperty({ type: Number })
+  @Expose()
+  followers_count: number;
+
+  @ApiProperty({ type: Number })
+  @Expose()
+  following_count: number;
 }

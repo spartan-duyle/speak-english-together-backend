@@ -158,4 +158,22 @@ export default class FollowerRepository {
       total: count,
     };
   }
+
+  async countFollowers(userId: number) {
+    return this.prismaService.follower.count({
+      where: {
+        followed_id: userId,
+        deleted_at: null,
+      },
+    });
+  }
+
+  async countFollowing(userId: number) {
+    return this.prismaService.follower.count({
+      where: {
+        follower_id: userId,
+        deleted_at: null,
+      },
+    });
+  }
 }
