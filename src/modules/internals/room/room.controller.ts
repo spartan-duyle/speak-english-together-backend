@@ -32,6 +32,7 @@ import CreateRoomResponse from './response/createRoom.response';
 import { ListRoomResponse } from './response/listRoom.response';
 import { JoinRoomDto } from './dto/joinRoom.dto';
 import { RoomResponse } from '@/modules/internals/room/response/room.response';
+import LeaveRoomDto from '@/modules/internals/room/dto/leaveRoom.dto';
 
 @Controller('room')
 @ApiTags('room')
@@ -170,8 +171,9 @@ export class RoomController {
   async leaveRoom(
     @GetUser() user: UserPayload,
     @Param('id') id: number,
+    @Body() request: LeaveRoomDto,
   ): Promise<void> {
-    await this.roomService.leaveRoom(user, id);
+    await this.roomService.leaveRoom(user, id, request);
   }
 
   @Get(':id')
