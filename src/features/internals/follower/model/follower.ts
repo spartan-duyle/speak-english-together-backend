@@ -18,6 +18,14 @@ export class Follower {
   @Expose()
   avatar_url: string;
 
+  @ApiProperty({ type: String })
+  @Expose()
+  level: string;
+
+  @ApiProperty({ type: String })
+  @Expose()
+  nationality: string;
+
   @ApiProperty({ type: Boolean })
   @Expose()
   is_following: boolean;

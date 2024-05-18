@@ -135,6 +135,8 @@ export class FollowerService {
         email: item.follower.email,
         avatar_url: item.follower.avatar_url,
         is_following: isFollowing,
+        nationality: item.follower.nationality,
+        level: item.follower.level,
       };
     });
 
@@ -171,6 +173,8 @@ export class FollowerService {
         email: item.followed.email,
         avatar_url: item.followed.avatar_url,
         is_following: isFollowing,
+        nationality: item.followed.nationality,
+        level: item.followed.level,
       };
     });
 
