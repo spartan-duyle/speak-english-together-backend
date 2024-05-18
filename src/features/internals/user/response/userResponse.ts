@@ -2,7 +2,7 @@ import UserLevel from '../enum/userLevel.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 
-export class UserResponse {
+export default class UserResponse {
   @ApiProperty({ type: String })
   @Expose()
   id: string;
@@ -30,4 +30,8 @@ export class UserResponse {
   @ApiProperty({ type: String })
   @Expose()
   description: string;
+
+  @ApiProperty({ type: Boolean })
+  @Expose()
+  is_following: boolean = true;
 }

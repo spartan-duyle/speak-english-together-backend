@@ -5,17 +5,21 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { UserResponse } from './response/userResponse';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import * as bcrypt from 'bcrypt';
 import UserRepository from '@/features/internals/user/user.repository';
 import { ErrorMessages } from '@/common/exceptions/errorMessage.exception';
 import ListUserResponse from '@/features/internals/user/response/listUser.response';
+import UserResponse from '@/features/internals/user/response/userResponse';
+import FollowerRepository from '@/features/internals/follower/follower.repository';
 
 @Injectable()
 export default class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly followerRepository: FollowerRepository,
+  ) {}
 
   async getByEmail(email: string): Promise<UserModel> {
     const user = await this.userRepository.byEmail(email);
@@ -95,18 +99,34 @@ export default class UserService {
   }
 
   async getUsers(
+    currentUserId: number,
     page: number,
     perPage: number,
     search: string,
   ): Promise<ListUserResponse> {
     const { data: users, total } = await this.userRepository.getUsers(
+      currentUserId,
       page || 1,
       perPage || 10,
       search,
     );
 
+    const followingOfCurrentUser =
+      await this.followerRepository.byFollowerId(currentUserId);
+
+    const data = await Promise.all(
+      users.map(async (user) => {
+        const isFollowing = followingOfCurrentUser.some(
+          (following) => following.followed_id === user.id,
+        );
+        const result = plainToInstanceCustom(UserResponse, user);
+        result.is_following = isFollowing;
+        return result;
+      }),
+    );
+
     return {
-      data: users.map((user) => plainToInstanceCustom(UserResponse, user)),
+      data: data,
       total,
     };
   }

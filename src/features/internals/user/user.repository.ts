@@ -70,9 +70,17 @@ export default class UserRepository {
     });
   }
 
-  async getUsers(page: number, perPage: number, search: string) {
+  async getUsers(
+    currentUserId: number,
+    page: number,
+    perPage: number,
+    search: string,
+  ) {
     const data = await this.prismaService.user.findMany({
       where: {
+        id: {
+          not: currentUserId,
+        },
         OR: [
           {
             full_name: {
@@ -96,6 +104,9 @@ export default class UserRepository {
 
     const total = await this.prismaService.user.count({
       where: {
+        id: {
+          not: currentUserId,
+        },
         OR: [
           {
             full_name: {
