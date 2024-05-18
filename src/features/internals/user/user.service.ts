@@ -131,8 +131,14 @@ export default class UserService {
     };
   }
 
-  async getUserById(id: number): Promise<UserResponse> {
-    const data = await this.userRepository.byId(id);
-    return plainToInstanceCustom(UserResponse, data);
+  async userDetail(currentUserId: number, id: number): Promise<UserResponse> {
+    const followingOfCurrentUser =
+      await this.followerRepository.byFollowerId(currentUserId);
+    const user = await this.userRepository.byId(id);
+    const result = plainToInstanceCustom(UserResponse, user);
+    result.is_following = followingOfCurrentUser.some(
+      (following) => following.followed_id === user.id,
+    );
+    return result;
   }
 }
