@@ -17,7 +17,7 @@ import {
 import AuthenticationService from './authetication.service';
 import RegisterDto from './dto/register.dto';
 import { MailService } from 'src/shared/mail/mail.service';
-import { UserModel } from 'src/features/internals/user/model/user.model';
+import { UserModel } from '@/modules/internals/user/model/user.model';
 import { AuthModel } from './model/auth.model';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refreshToken.dto';

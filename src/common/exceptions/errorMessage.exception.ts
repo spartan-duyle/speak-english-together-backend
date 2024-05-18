@@ -28,6 +28,7 @@ export const ErrorMessages = {
     USER_ALREADY_IN_ROOM: 'User already in the room',
     CAN_NOT_JOIN_ROOM: 'Can not join this room',
     USER_NOT_IN_ROOM: 'User not in the room',
+    USER_IS_JOINING_ANOTHER_ROOM: 'You are joining another room',
   },
 
   FOLLOWER: {

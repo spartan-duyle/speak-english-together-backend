@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from 'src/database/prisma/prisma.serivce';
-import { Role } from 'src/features/internals/user/enum/role.enum';
+import { Role } from '@/modules/internals/user/enum/role.enum';
 
 @Injectable()
 export class UserStrategy extends PassportStrategy(Strategy, 'user') {
