@@ -1,6 +1,5 @@
 import { PrismaService } from '@/database/prisma/prisma.serivce';
 import { Injectable } from '@nestjs/common';
-import { count } from 'rxjs';
 
 @Injectable()
 export default class RoomMemberRepository {
@@ -45,5 +44,17 @@ export default class RoomMemberRepository {
     });
 
     return count > 0;
+  }
+
+  async batchDelete(roomId: any) {
+    return this.prismaService.roomMember.updateMany({
+      where: {
+        room_id: roomId,
+      },
+      data: {
+        deleted_at: new Date(),
+        updated_at: new Date(),
+      },
+    });
   }
 }

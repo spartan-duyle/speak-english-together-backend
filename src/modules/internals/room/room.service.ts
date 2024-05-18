@@ -2,7 +2,6 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { UserPayload } from 'src/authentication/types/user.payload';
@@ -22,6 +21,8 @@ import RoomRepository from '@/modules/internals/room/room.repository';
 import { ErrorMessages } from '@/common/exceptions/errorMessage.exception';
 import { TopicService } from '@/modules/internals/topic/topic.service';
 import { TopicDto } from '@/modules/internals/topic/dto/topic.dto';
+import { PrismaService } from '@/database/prisma/prisma.serivce';
+import LeaveRoomDto from '@/modules/internals/room/dto/leaveRoom.dto';
 
 @Injectable()
 export class RoomService {
@@ -31,6 +32,7 @@ export class RoomService {
     private readonly videoSDKService: VideoSDKService,
     private readonly roomRepository: RoomRepository,
     private readonly topicService: TopicService,
+    private readonly prisma: PrismaService,
   ) {}
 
   async generateVideoSDKToken(): Promise<VideoSDKTokenResponse> {
@@ -43,45 +45,54 @@ export class RoomService {
     user: UserPayload,
     data: CreateRoomDto,
   ): Promise<CreateRoomResponse> {
-    if (data.isPrivate && !data.password) {
-      throw new BadRequestException(ErrorMessages.ROOM.PASSWORD_IS_REQUIRED);
+    try {
+      return await this.prisma.$transaction(async () => {
+        if (data.isPrivate && !data.password) {
+          throw new BadRequestException(
+            'Password is required for private rooms',
+          );
+        }
+
+        if (data.topicId) {
+          await this.topicService.getTopicById(data.topicId);
+        }
+
+        const videoSDKRoomId = await this.videoSDKService.createRoom(
+          data.videoSDKToken,
+        );
+
+        console.log(videoSDKRoomId);
+
+        const isUserJoiningAnotherRoom =
+          await this.roomMemberService.isUserJoiningAnotherRoom(user.id);
+
+        if (isUserJoiningAnotherRoom) {
+          throw new ConflictException('User is joining another room');
+        }
+
+        const room = await this.roomRepository.create(
+          data,
+          user,
+          videoSDKRoomId,
+        );
+
+        const addFirestoreRoomMemberData: AddFirestoreRoomMemberDto = {
+          roomId: room.id,
+          fullName: user.full_name,
+          avatarUrl: user.avatar_url,
+          userId: user.id,
+          isHost: true,
+        };
+
+        await this.firestoreRoomMemberService.addFirestoreRoomMember(
+          addFirestoreRoomMemberData,
+        );
+
+        return plainToInstanceCustom(CreateRoomResponse, room);
+      });
+    } catch (error: any) {
+      throw error;
     }
-
-    if (data.topicId) {
-      await this.topicService.getTopicById(data.topicId);
-    }
-
-    const videoSDKRoomId = await this.videoSDKService.createRoom(
-      data.videoSDKToken,
-    );
-
-    const isUserJoiningAnotherRoom =
-      await this.roomMemberService.isUserJoiningAnotherRoom(user.id);
-
-    if (isUserJoiningAnotherRoom) {
-      throw new ConflictException(
-        ErrorMessages.ROOM.USER_IS_JOINING_ANOTHER_ROOM,
-      );
-    }
-
-    const room = await this.roomRepository.create(data, user, videoSDKRoomId);
-
-    const addFirestoreRoomMemberData: AddFirestoreRoomMemberDto = {
-      roomId: room.id,
-      fullName: user.full_name,
-      avatarUrl: user.avatar_url,
-      userId: user.id,
-      isHost: true,
-    };
-
-    // sync room members to firestore
-    await this.firestoreRoomMemberService.addFirestoreRoomMember(
-      addFirestoreRoomMemberData,
-    );
-
-    return plainToInstanceCustom(CreateRoomResponse, {
-      ...room,
-    });
   }
 
   async listActiveRooms(
@@ -122,120 +133,149 @@ export class RoomService {
     roomId: number,
     request: JoinRoomDto,
   ): Promise<void> {
-    const existingActiveRoom = await this.roomRepository.byId(roomId);
+    try {
+      return await this.prisma.$transaction(async () => {
+        const existingActiveRoom = await this.roomRepository.byId(roomId);
 
-    if (!existingActiveRoom) {
-      throw new NotFoundException(ErrorMessages.ROOM.NOT_FOUND);
+        if (!existingActiveRoom) {
+          throw new NotFoundException(ErrorMessages.ROOM.NOT_FOUND);
+        }
+
+        if (existingActiveRoom.is_private) {
+          if (!request.password) {
+            throw new BadRequestException(
+              ErrorMessages.ROOM.PASSWORD_IS_REQUIRED,
+            );
+          } else if (request.password !== existingActiveRoom.password) {
+            throw new BadRequestException(
+              ErrorMessages.ROOM.INCORRECT_PASSWORD,
+            );
+          }
+        }
+
+        if (
+          existingActiveRoom.current_member_amount >=
+          existingActiveRoom.max_member_amount
+        ) {
+          throw new BadRequestException(ErrorMessages.ROOM.FULL_ROOM);
+        }
+
+        const roomMember = await this.roomMemberService.byRoomIdAndUserId(
+          existingActiveRoom.id,
+          user.id,
+        );
+
+        if (roomMember) {
+          throw new ConflictException(ErrorMessages.ROOM.USER_ALREADY_IN_ROOM);
+        }
+
+        const isUserJoiningAnotherRoom =
+          await this.roomMemberService.isUserJoiningAnotherRoom(user.id);
+
+        if (isUserJoiningAnotherRoom) {
+          throw new ConflictException(
+            ErrorMessages.ROOM.USER_IS_JOINING_ANOTHER_ROOM,
+          );
+        }
+
+        // validate videSDK room
+        const isVideoSDKRoomValid = this.videoSDKService.validateRoom(
+          existingActiveRoom.video_sdk_room_id,
+          request.videoSDKToken,
+        );
+
+        if (!isVideoSDKRoomValid) {
+          throw new BadRequestException(ErrorMessages.ROOM.CAN_NOT_JOIN_ROOM);
+        }
+
+        await this.roomRepository.updateCurrentMemberAmount(
+          existingActiveRoom.id,
+          existingActiveRoom.current_member_amount + 1,
+        );
+
+        await this.roomMemberService.addRoomMember({
+          userId: user.id,
+          roomId: existingActiveRoom.id,
+          isHost: false,
+          avatarUrl: user.avatar_url,
+          fullName: user.full_name,
+          isMuted: false,
+        });
+
+        const addFirestoreRoomMemberData: AddFirestoreRoomMemberDto = {
+          roomId: existingActiveRoom.id,
+          fullName: user.full_name,
+          avatarUrl: user.avatar_url,
+          userId: user.id,
+          isHost: false,
+        };
+
+        // sync room members to firestore
+        await this.firestoreRoomMemberService.addFirestoreRoomMember(
+          addFirestoreRoomMemberData,
+        );
+      });
+    } catch (error: any) {
+      throw error;
     }
-
-    if (existingActiveRoom.is_private) {
-      if (!request.password) {
-        throw new BadRequestException(ErrorMessages.ROOM.PASSWORD_IS_REQUIRED);
-      } else if (request.password !== existingActiveRoom.password) {
-        throw new BadRequestException(ErrorMessages.ROOM.INCORRECT_PASSWORD);
-      }
-    }
-
-    if (
-      existingActiveRoom.current_member_amount >=
-      existingActiveRoom.max_member_amount
-    ) {
-      throw new BadRequestException(ErrorMessages.ROOM.FULL_ROOM);
-    }
-
-    const roomMember = await this.roomMemberService.byRoomIdAndUserId(
-      existingActiveRoom.id,
-      user.id,
-    );
-
-    if (roomMember) {
-      throw new ConflictException(ErrorMessages.ROOM.USER_ALREADY_IN_ROOM);
-    }
-
-    const isUserJoiningAnotherRoom =
-      await this.roomMemberService.isUserJoiningAnotherRoom(user.id);
-
-    if (isUserJoiningAnotherRoom) {
-      throw new ConflictException(
-        ErrorMessages.ROOM.USER_IS_JOINING_ANOTHER_ROOM,
-      );
-    }
-
-    // validate videSDK room
-    const isVideoSDKRoomValid = this.videoSDKService.validateRoom(
-      existingActiveRoom.video_sdk_room_id,
-      request.videoSDKToken,
-    );
-
-    if (!isVideoSDKRoomValid) {
-      throw new BadRequestException(ErrorMessages.ROOM.CAN_NOT_JOIN_ROOM);
-    }
-
-    await this.roomRepository.updateCurrentMemberAmount(
-      existingActiveRoom.id,
-      existingActiveRoom.current_member_amount + 1,
-    );
-
-    await this.roomMemberService.addRoomMember({
-      userId: user.id,
-      roomId: existingActiveRoom.id,
-      isHost: false,
-      avatarUrl: user.avatar_url,
-      fullName: user.full_name,
-      isMuted: false,
-    });
-
-    const addFirestoreRoomMemberData: AddFirestoreRoomMemberDto = {
-      roomId: existingActiveRoom.id,
-      fullName: user.full_name,
-      avatarUrl: user.avatar_url,
-      userId: user.id,
-      isHost: false,
-    };
-
-    // sync room members to firestore
-    await this.firestoreRoomMemberService.addFirestoreRoomMember(
-      addFirestoreRoomMemberData,
-    );
   }
 
-  async leaveRoom(user: UserPayload, roomId: number) {
-    const existingActiveRoom = await this.roomRepository.byId(roomId);
+  async leaveRoom(user: UserPayload, roomId: number, request: LeaveRoomDto) {
+    try {
+      return await this.prisma.$transaction(async () => {
+        const existingActiveRoom = await this.roomRepository.byId(roomId);
 
-    if (!existingActiveRoom) {
-      throw new NotFoundException(ErrorMessages.ROOM.NOT_FOUND);
-    }
+        if (!existingActiveRoom) {
+          throw new NotFoundException(ErrorMessages.ROOM.NOT_FOUND);
+        }
 
-    const roomMember = await this.roomMemberService.byRoomIdAndUserId(
-      existingActiveRoom.id,
-      user.id,
-    );
+        const roomMember = await this.roomMemberService.byRoomIdAndUserId(
+          existingActiveRoom.id,
+          user.id,
+        );
 
-    if (!roomMember) {
-      throw new NotFoundException(ErrorMessages.ROOM.USER_NOT_IN_ROOM);
-    }
+        if (!roomMember) {
+          throw new NotFoundException(ErrorMessages.ROOM.USER_NOT_IN_ROOM);
+        }
 
-    if (roomMember.is_host) {
-      // if the user is the host, then the room should be ended
-      await this.roomRepository.endRoom(existingActiveRoom.id);
-      await this.firestoreRoomMemberService.deleteFirestoreRoomMemberForHost(
-        existingActiveRoom.id,
-      );
-    } else {
-      // if the user is not the host, then just remove the user from the room
-      // decrement the current_member_amount
+        if (roomMember.is_host) {
+          // if the user is the host, then the room should be ended
+          await this.roomMemberService.removeManyMember(existingActiveRoom.id);
+          await this.roomRepository.endRoom(existingActiveRoom.id);
+          await this.firestoreRoomMemberService.deleteFirestoreRoomMemberForHost(
+            existingActiveRoom.id,
+          );
 
-      await this.roomMemberService.removeRoomMember(roomMember.id);
+          // deactivate video sdk room
+          await this.videoSDKService.deactivateRoom(
+            existingActiveRoom.video_sdk_room_id,
+            request.videoSDKToken,
+          );
 
-      await this.roomRepository.updateCurrentMemberAmount(
-        existingActiveRoom.id,
-        existingActiveRoom.current_member_amount - 1,
-      );
+          // end videoSDK sessions
+          await this.videoSDKService.endSession(
+            existingActiveRoom.video_sdk_room_id,
+            request.videoSDKToken,
+          );
+        } else {
+          // if the user is not the host, then just remove the user from the room
+          // decrement the current_member_amount
 
-      await this.firestoreRoomMemberService.deleteFirestoreRoomMember(
-        existingActiveRoom.id,
-        user.id,
-      );
+          await this.roomMemberService.removeRoomMember(roomMember.id);
+
+          await this.roomRepository.updateCurrentMemberAmount(
+            existingActiveRoom.id,
+            existingActiveRoom.current_member_amount - 1,
+          );
+
+          await this.firestoreRoomMemberService.deleteFirestoreRoomMember(
+            existingActiveRoom.id,
+            user.id,
+          );
+        }
+      });
+    } catch (error: any) {
+      throw error;
     }
   }
 
