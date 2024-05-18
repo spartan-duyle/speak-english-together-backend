@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -63,5 +63,16 @@ export class TopicController {
   @UseGuards(UserGuard, VerifyGuard)
   async createTopic(@Body() request: CreateTopicDto): Promise<TopicDto> {
     return this.topicService.createTopic(request);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Fetch a topic by id' })
+  @ApiOkResponse({
+    description: 'Successfully fetched a topic',
+    type: TopicDto,
+  })
+  @UseGuards(UserGuard, VerifyGuard)
+  async getTopicById(@Param('id') id: number): Promise<TopicDto> {
+    return this.topicService.getTopicById(id);
   }
 }
