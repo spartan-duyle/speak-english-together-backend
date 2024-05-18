@@ -35,10 +35,18 @@ export default class UserService {
 
   async userProfile(id: number): Promise<UserResponse> {
     const user = await this.userRepository.byId(id);
+
     if (!user) {
       throw new NotFoundException(ErrorMessages.USER.USER_NOT_FOUND);
     }
-    return plainToInstanceCustom(UserResponse, user);
+
+    const countFollowers = await this.followerRepository.countFollowers(id);
+    const countFollowing = await this.followerRepository.countFollowing(id);
+
+    const result = plainToInstanceCustom(UserResponse, user);
+    result.count_followers = countFollowers;
+    result.count_following = countFollowing;
+    return result;
   }
 
   async updateUserProfile(
@@ -98,7 +106,7 @@ export default class UserService {
     return await this.userRepository.create(data);
   }
 
-  async getUsers(
+  async listUsers(
     currentUserId: number,
     page: number,
     perPage: number,
@@ -120,7 +128,15 @@ export default class UserService {
           (following) => following.followed_id === user.id,
         );
         const result = plainToInstanceCustom(UserResponse, user);
+        const countFollowers = await this.followerRepository.countFollowers(
+          user.id,
+        );
+        const countFollowing = await this.followerRepository.countFollowing(
+          user.id,
+        );
         result.is_following = isFollowing;
+        result.count_followers = countFollowers;
+        result.count_following = countFollowing;
         return result;
       }),
     );
@@ -131,11 +147,28 @@ export default class UserService {
     };
   }
 
-  async userDetail(currentUserId: number, id: number): Promise<UserResponse> {
+  async userDetail(
+    currentUserId: number,
+    ofUserId: number,
+  ): Promise<UserResponse> {
+    const user = await this.userRepository.byId(ofUserId);
+
+    if (!user) {
+      throw new NotFoundException(ErrorMessages.USER.USER_NOT_FOUND);
+    }
+
     const followingOfCurrentUser =
       await this.followerRepository.byFollowerId(currentUserId);
-    const user = await this.userRepository.byId(id);
+
+    const countFollowers =
+      await this.followerRepository.countFollowers(ofUserId);
+    const countFollowing =
+      await this.followerRepository.countFollowing(ofUserId);
+
     const result = plainToInstanceCustom(UserResponse, user);
+
+    result.count_followers = countFollowers;
+    result.count_following = countFollowing;
     result.is_following = followingOfCurrentUser.some(
       (following) => following.followed_id === user.id,
     );

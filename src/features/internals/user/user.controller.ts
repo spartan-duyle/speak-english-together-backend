@@ -100,7 +100,7 @@ export class UserController {
     @Query('perPage') perPage: number = null,
     @Query('search') search: string = '',
   ): Promise<ListUserResponse> {
-    return await this.userService.getUsers(user.id, page, perPage, search);
+    return await this.userService.listUsers(user.id, page, perPage, search);
   }
 
   @Get(':id')
