@@ -114,7 +114,7 @@ export class UserController {
   })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiForbiddenResponse({ description: 'Forbidden' })
-  async getUserById(@Param('id') id: number): Promise<UserResponse> {
-    return await this.userService.getUserById(id);
+  async userDetail(@GetUser() user: UserPayload, @Param('id') id: number): Promise<UserResponse> {
+    return await this.userService.userDetail(user.id, id);
   }
 }
