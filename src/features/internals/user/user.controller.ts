@@ -12,7 +12,6 @@ import {
 import UserService from './user.service';
 import { UserPayload } from '@/authentication/types/user.payload';
 import { GetUser } from '@/common/decorators/get-user.decorator';
-import { UserResponse } from './response/userResponse';
 import { UserGuard } from '@/common/guards/auth.guard';
 import { VerifyGuard } from '@/common/guards/verify.guard';
 import {
@@ -26,6 +25,7 @@ import {
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import ListUserResponse from '@/features/internals/user/response/listUser.response';
+import UserResponse from '@/features/internals/user/response/userResponse';
 
 @Controller('user')
 @ApiTags('user')
@@ -95,11 +95,12 @@ export class UserController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiForbiddenResponse({ description: 'Forbidden' })
   async getUsers(
+    @GetUser() user: UserPayload,
     @Query('page') page: number = null,
     @Query('perPage') perPage: number = null,
     @Query('search') search: string = '',
   ): Promise<ListUserResponse> {
-    return await this.userService.getUsers(page, perPage, search);
+    return await this.userService.getUsers(user.id, page, perPage, search);
   }
 
   @Get(':id')
