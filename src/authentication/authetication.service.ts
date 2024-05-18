@@ -1,16 +1,16 @@
 import * as bcrypt from 'bcrypt';
 import RegisterDto from './dto/register.dto';
-import { UserStatus } from 'src/features/internals/user/enum/userStatus.enum';
+import { UserStatus } from '@/modules/internals/user/enum/userStatus.enum';
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { pick } from 'lodash';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refreshToken.dto';
-import UserService from 'src/features/internals/user/user.service';
-import { UserModel } from 'src/features/internals/user/model/user.model';
+import UserService from '@/modules/internals/user/user.service';
+import { UserModel } from '@/modules/internals/user/model/user.model';
 import { ErrorMessages } from '@/common/exceptions/errorMessage.exception';
-import UserRepository from '@/features/internals/user/user.repository';
+import UserRepository from '@/modules/internals/user/user.repository';
 
 @Injectable()
 export default class AuthenticationService {

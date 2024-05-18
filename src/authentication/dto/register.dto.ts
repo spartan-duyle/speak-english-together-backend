@@ -8,7 +8,7 @@ import {
   MaxLength,
   Matches,
 } from 'class-validator';
-import UserLevel from 'src/features/internals/user/enum/userLevel.enum';
+import UserLevel from '@/modules/internals/user/enum/userLevel.enum';
 
 export class RegisterDto {
   @IsEmail()
