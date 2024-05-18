@@ -67,4 +67,47 @@ export class VideoSDKService {
       throw new InternalServerErrorException('Something went wrongs');
     }
   }
+
+  async deactivateRoom(roomId: string, videoSDKToken: string) {
+    try {
+      const deactivateRoomUrl = `${this.videoSDKAPIUrl}/rooms/deactivate`;
+
+      const options = {
+        method: 'POST',
+        headers: {
+          Authorization: videoSDKToken,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          roomId: roomId,
+        }),
+      };
+
+      await fetch(deactivateRoomUrl, options);
+    } catch (ex) {
+      throw new InternalServerErrorException('Something went wrongs');
+    }
+  }
+
+  async endSession(roomId: string, videoSDKToken: string) {
+    try {
+      const sessionUrl = `${this.videoSDKAPIUrl}/sessions/end`;
+
+      const options = {
+        method: 'POST',
+        headers: {
+          Authorization: videoSDKToken,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          roomId: roomId,
+        }),
+      };
+
+      const response = await fetch(sessionUrl, options);
+      return await response.json();
+    } catch (ex) {
+      throw new InternalServerErrorException('Something went wrongs');
+    }
+  }
 }
