@@ -54,7 +54,7 @@ export class OpenaiService {
     try {
       // Make the request to the OpenAI API
       const response = await this.openai.chat.completions.create({
-        model: 'gpt-4', // Assuming 'gpt-4' is the correct model name
+        model: 'gpt-4o', // Assuming 'gpt-4' is the correct model name
         messages: [
           {
             role: 'system',
