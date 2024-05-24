@@ -19,6 +19,7 @@ import { RedisCacheModule } from './redis/redisCacheModule';
 import { OpenaiModule } from '@/modules/externals/openai/openai.module';
 import { OpenaiService } from './modules/externals/openai/openai.service';
 import { CacheModule } from '@nestjs/cache-manager';
+import { VocabularyModule } from '@/modules/internals/vocabulary/vocabulary.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { CacheModule } from '@nestjs/cache-manager';
       host: process.env.REDIS_HOST || 'localhost',
       port: parseInt(process.env.REDIS_PORT, 10) || 6379,
     }),
+    VocabularyModule,
   ],
   controllers: [],
   providers: [OpenaiService],

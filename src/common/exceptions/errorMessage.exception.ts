@@ -35,4 +35,8 @@ export const ErrorMessages = {
     CANNOT_FOLLOW_YOURSELF: 'You cannot follow yourself',
     USER_NOT_FOLLOWED: 'User not followed',
   },
+
+  VOCABULARY: {
+    NOT_FOUND: 'Vocabulary not found',
+  },
 };

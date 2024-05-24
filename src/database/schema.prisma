@@ -75,4 +75,18 @@ model Topic {
   room_member   RoomMember[]
   followers Follower[] @relation("Followed")
   following Follower[] @relation("Follower")
+  vocabularies Vocabulary[]
+}
+model Vocabulary {
+  id              Int      @id @default(autoincrement())
+  word            String
+  meaning     String
+  examples        Json[]
+  context         String?
+  created_at       DateTime @default(now())
+  updated_at      DateTime?
+  deleted_at      DateTime?
+  // Define a many-to-one relationship with User
+  user            User     @relation(fields: [user_id], references: [id])
+  user_id         Int
 }
