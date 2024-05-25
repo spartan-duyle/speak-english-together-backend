@@ -6,7 +6,7 @@
   "license": "MIT",
   "prisma": {
     "schema": "src/database/schema.prisma",
-    "migrateOutput" : "src/database/migrations/"
+    "migrateOutput": "src/database/migrations/"
   },
   "scripts": {
     "build": "nest build",
@@ -50,6 +50,7 @@
     "cache-manager": "^5.5.3",
     "cache-manager-ioredis": "^2.1.0",
     "cache-manager-redis-store": "^3.0.1",
+    "cache-manager-redis-yet": "^5.0.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "cookie-parser": "^1.4.6",
