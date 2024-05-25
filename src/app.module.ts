@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import Joi from '@hapi/joi';
 import { PrismaModule } from './database/prisma/prisma.module';
 import { UserModule } from '@/modules/internals/user/user.module';
@@ -20,6 +20,7 @@ import { OpenaiModule } from '@/modules/externals/openai/openai.module';
 import { OpenaiService } from './modules/externals/openai/openai.service';
 import { CacheModule } from '@nestjs/cache-manager';
 import { VocabularyModule } from '@/modules/internals/vocabulary/vocabulary.module';
+import { redisStore } from 'cache-manager-redis-yet';
 
 @Module({
   imports: [
@@ -50,10 +51,18 @@ import { VocabularyModule } from '@/modules/internals/vocabulary/vocabulary.modu
     TranslateModule,
     RedisCacheModule,
     OpenaiModule,
-    CacheModule.register({
+    CacheModule.registerAsync({
       isGlobal: true,
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT, 10) || 6379,
+      useFactory: async (config) => {
+        const store = await redisStore({
+          socket: {
+            host: config.get('redis.host'),
+            port: config.get('redis.port'),
+          },
+        });
+        return { store };
+      },
+      inject: [ConfigService],
     }),
     VocabularyModule,
   ],
