@@ -11,14 +11,28 @@ export class VocabularyResponse {
   @ApiProperty({ type: 'string', description: 'Word' })
   word: string;
 
+  @ApiProperty({
+    type: 'string',
+    description: 'Audio URL of the source text',
+  })
+  @Expose()
+  word_audio_url: string;
+
   @Expose()
   @ApiProperty({ type: 'string', description: 'Meaning of the word' })
   meaning: string;
 
+  @ApiProperty({
+    type: 'string',
+    description: 'Audio URL of the output text',
+  })
+  @Expose()
+  meaning_audio_url: string;
+
   @Expose()
   @ApiProperty({
     type: [ExampleSentenceDto],
-    description: 'Examples of the word'
+    description: 'Examples of the word',
   })
   examples: ExampleSentenceDto[];
 
