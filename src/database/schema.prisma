@@ -76,6 +76,7 @@ model Topic {
   followers Follower[] @relation("Followed")
   following Follower[] @relation("Follower")
   vocabularies Vocabulary[]
+  vocabulary_topics VocabularyTopic[]
 }
 model Vocabulary {
   id                  Int      @id @default(autoincrement())
@@ -91,4 +92,19 @@ model Vocabulary {
   // Define a many-to-one relationship with User
   user                User     @relation(fields: [user_id], references: [id])
   user_id             Int
+
+  vocabulary_topic_id Int?
+  vocabulary_topic  VocabularyTopic? @relation(fields: [vocabulary_topic_id], references: [id])
+  @@index([vocabulary_topic_id])
+}model VocabularyTopic {
+  id Int @id @default(autoincrement())
+  name String
+  description String?
+  vocabularies  Vocabulary[]
+  user_id        Int
+  user          User @relation(fields: [user_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime?
+  deleted_at DateTime?
+  @@unique([name, user_id])
 }

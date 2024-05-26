@@ -7,12 +7,16 @@ import { ExampleSentenceDto } from '@/modules/internals/vocabulary/dto/exampleSe
 import { ListVocabularyResponse } from '@/modules/internals/vocabulary/response/listVocabulary.response';
 import { ErrorMessages } from '@/common/exceptions/errorMessage.exception';
 import { GoogleSpeechService } from '@/google-speech/google-speech.service';
+import { VocabularyTopicDto } from '@/modules/internals/vocabularyTopic/dto/vocabularyTopicDto';
+import VocabularyTopicResponse from '@/modules/internals/vocabularyTopic/response/vocabularyTopic.response';
+import { VocabularyTopicRepository } from '@/modules/internals/vocabularyTopic/vocabularyTopic.repository';
 
 @Injectable()
 export class VocabularyService {
   constructor(
     private readonly vocabularyRepository: VocabularyRepository,
     private readonly googleSpeechService: GoogleSpeechService,
+    private readonly vocabularyTopicRepository: VocabularyTopicRepository,
   ) {}
 
   async create(
@@ -30,8 +34,17 @@ export class VocabularyService {
       );
     }
 
-    const result = await this.vocabularyRepository.create(data, userId);
-    console.log('result', result);
+    if (data.topic_id) {
+      const topic = await this.vocabularyTopicRepository.findByIdAndUserId(
+        data.topic_id,
+        userId,
+      );
+      if (!topic) {
+        throw new NotFoundException(ErrorMessages.VOCABULARY_TOPIC.NOT_FOUND);
+      }
+    }
+
+    const result = await this.vocabularyRepository.insert(data, userId);
     const vocabularyResponse = plainToInstanceCustom(
       VocabularyResponse,
       result,
@@ -39,6 +52,11 @@ export class VocabularyService {
     vocabularyResponse.examples = result.examples.map((item) => {
       return plainToInstanceCustom(ExampleSentenceDto, item);
     });
+
+    vocabularyResponse.topic = plainToInstanceCustom(
+      VocabularyTopicResponse,
+      result.vocabulary_topic,
+    );
 
     return vocabularyResponse;
   }
@@ -48,12 +66,14 @@ export class VocabularyService {
     page: number,
     perPage: number,
     search: string,
+    vocabularyTopicId?: number,
   ): Promise<ListVocabularyResponse> {
     const { data, total } = await this.vocabularyRepository.getVocabularies(
       userId,
       page || 1,
       perPage || 10,
       search,
+      vocabularyTopicId,
     );
 
     const vocabularies = data.map((item) => {
@@ -65,6 +85,11 @@ export class VocabularyService {
         return plainToInstanceCustom(ExampleSentenceDto, example);
       });
 
+      vocabularyResponse.topic = plainToInstanceCustom(
+        VocabularyTopicResponse,
+        item.vocabulary_topic,
+      );
+
       return vocabularyResponse;
     });
 
@@ -74,36 +99,77 @@ export class VocabularyService {
     };
   }
 
-  async getVocabulary(id: number) {
-    const data = await this.vocabularyRepository.findById(id);
-    if (!data) {
-      throw new NotFoundException('Vocabulary not found');
-    }
-    const vocabularyResponse = plainToInstanceCustom(VocabularyResponse, data);
-    vocabularyResponse.examples = data.examples.map((item) => {
-      return plainToInstanceCustom(ExampleSentenceDto, item);
-    });
-    return vocabularyResponse;
-  }
-
-  async deleteVocabulary(id: number) {
-    const data = await this.vocabularyRepository.findById(id);
+  async getVocabulary(vocabularyId: number, userId: number) {
+    const data = await this.vocabularyRepository.findByIdAndUserId(
+      vocabularyId,
+      userId,
+    );
 
     if (!data) {
       throw new NotFoundException(ErrorMessages.VOCABULARY.NOT_FOUND);
     }
 
-    await this.vocabularyRepository.delete(id);
+    const vocabularyResponse = plainToInstanceCustom(VocabularyResponse, data);
+    vocabularyResponse.examples = data.examples.map((item) => {
+      return plainToInstanceCustom(ExampleSentenceDto, item);
+    });
+    vocabularyResponse.topic = plainToInstanceCustom(
+      VocabularyTopicResponse,
+      data.vocabulary_topic,
+    );
+    return vocabularyResponse;
   }
 
-  async updateVocabulary(id: number, data: AddUpdateVocabularyDto) {
-    const vocabulary = await this.vocabularyRepository.findById(id);
+  async deleteVocabulary(vocabularyId: number, userId: number) {
+    const data = await this.vocabularyRepository.findByIdAndUserId(
+      vocabularyId,
+      userId,
+    );
+
+    if (!data) {
+      throw new NotFoundException(ErrorMessages.VOCABULARY.NOT_FOUND);
+    }
+
+    return await this.vocabularyRepository.delete(vocabularyId);
+  }
+
+  async updateVocabulary(
+    vocabularyId: number,
+    userId: number,
+    data: AddUpdateVocabularyDto,
+  ): Promise<VocabularyResponse> {
+    const vocabulary = await this.vocabularyRepository.findByIdAndUserId(
+      vocabularyId,
+      userId,
+    );
 
     if (!vocabulary) {
       throw new NotFoundException(ErrorMessages.VOCABULARY.NOT_FOUND);
     }
 
-    const result = await this.vocabularyRepository.update(id, data);
+    if (data.topic_id) {
+      const topic = await this.vocabularyRepository.findByIdAndUserId(
+        data.topic_id,
+        userId,
+      );
+      if (!topic) {
+        throw new NotFoundException(ErrorMessages.VOCABULARY_TOPIC.NOT_FOUND);
+      }
+    }
+
+    if (vocabulary.word !== data.word) {
+      data.word_audio_url = await this.googleSpeechService.textToSpeech(
+        data.word,
+      );
+    }
+
+    if (vocabulary.meaning !== data.meaning) {
+      data.meaning_audio_url = await this.googleSpeechService.textToSpeech(
+        data.meaning,
+      );
+    }
+
+    const result = await this.vocabularyRepository.update(vocabularyId, data);
 
     const vocabularyResponse = plainToInstanceCustom(
       VocabularyResponse,
@@ -113,6 +179,11 @@ export class VocabularyService {
     vocabularyResponse.examples = result.examples.map((item) => {
       return plainToInstanceCustom(ExampleSentenceDto, item);
     });
+
+    vocabularyResponse.topic = plainToInstanceCustom(
+      VocabularyTopicResponse,
+      result.vocabulary_topic,
+    );
 
     return vocabularyResponse;
   }

@@ -22,6 +22,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { VocabularyModule } from '@/modules/internals/vocabulary/vocabulary.module';
 import { redisStore } from 'cache-manager-redis-yet';
 import { GoogleSpeechModule } from './google-speech/google-speech.module';
+import { VocabularyTopicModule } from '@/modules/internals/vocabularyTopic/vocabularyTopic.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { GoogleSpeechModule } from './google-speech/google-speech.module';
     }),
     VocabularyModule,
     GoogleSpeechModule,
+    VocabularyTopicModule,
   ],
   controllers: [],
   providers: [OpenaiService],
