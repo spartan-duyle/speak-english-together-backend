@@ -39,4 +39,9 @@ export const ErrorMessages = {
   VOCABULARY: {
     NOT_FOUND: 'Vocabulary not found',
   },
+
+  VOCABULARY_TOPIC: {
+    ALREADY_EXISTS: 'Vocabulary topic already exists',
+    NOT_FOUND: 'Vocabulary topic not found',
+  },
 };
