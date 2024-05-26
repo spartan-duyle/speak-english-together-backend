@@ -45,4 +45,12 @@ export class AddUpdateVocabularyDto {
   })
   @IsOptional()
   context: string;
+
+  @ApiProperty({
+    type: 'number',
+    description: 'Vocabulary topic ID',
+    required: false,
+  })
+  @IsOptional()
+  topic_id?: number;
 }

@@ -1,9 +1,12 @@
 import {
   Body,
-  Controller, Delete,
+  Controller,
+  Delete,
   Get,
-  HttpCode, Param,
-  Post, Put,
+  HttpCode,
+  Param,
+  Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -14,17 +17,19 @@ import { GetUser } from '@/common/decorators/get-user.decorator';
 import { UserPayload } from '@/authentication/types/user.payload';
 import { AddUpdateVocabularyDto } from '@/modules/internals/vocabulary/dto/addUpdateVocabularyDto';
 import { VocabularyResponse } from '@/modules/internals/vocabulary/response/vocabulary.response';
-import { ApiOkResponse } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { ListVocabularyResponse } from '@/modules/internals/vocabulary/response/listVocabulary.response';
 
 @Controller('vocabulary')
+@ApiTags('Vocabulary')
 export class VocabularyController {
   constructor(private readonly vocabularyService: VocabularyService) {}
 
   @Post('')
   @UseGuards(UserGuard, VerifyGuard)
   @ApiOkResponse({ type: VocabularyResponse })
-  @HttpCode(200)
+  @HttpCode(201)
+  @ApiOperation({ summary: 'Add a new vocabulary' })
   async addToUser(
     @Body() addVocabularyDto: AddUpdateVocabularyDto,
     @GetUser() user: UserPayload,
@@ -35,41 +40,48 @@ export class VocabularyController {
   @Get('')
   @UseGuards(UserGuard, VerifyGuard)
   @ApiOkResponse({ type: ListVocabularyResponse })
+  @ApiOperation({ summary: 'Get all vocabularies' })
   async getVocabularies(
     @GetUser() user: UserPayload,
     @Query('page') page: number = null,
     @Query('perPage') perPage: number = null,
     @Query('search') search: string = '',
+    @Query('topicId') vocabularyTopicId: number = null,
   ): Promise<ListVocabularyResponse> {
     return await this.vocabularyService.getVocabularies(
       user.id,
       page,
       perPage,
       search,
+      vocabularyTopicId,
     );
   }
 
   @Get(':id')
   @UseGuards(UserGuard, VerifyGuard)
   @ApiOkResponse({ type: VocabularyResponse })
+  @ApiOperation({ summary: 'Get a vocabulary' })
   async getVocabulary(
     @GetUser() user: UserPayload,
     @Param('id') id: number,
   ): Promise<VocabularyResponse> {
-    return await this.vocabularyService.getVocabulary(id);
+    return await this.vocabularyService.getVocabulary(id, user.id);
   }
 
   @Delete(':id')
   @UseGuards(UserGuard, VerifyGuard)
+  @ApiOperation({ summary: 'Delete a vocabulary' })
   async deleteVocabulary(
     @GetUser() user: UserPayload,
     @Param('id') id: number,
   ) {
-    return await this.vocabularyService.deleteVocabulary(id);
+    return await this.vocabularyService.deleteVocabulary(id, user.id);
   }
 
   @Put(':id')
   @UseGuards(UserGuard, VerifyGuard)
+  @ApiOperation({ summary: 'Update a vocabulary' })
+  @ApiOkResponse({ type: VocabularyResponse })
   async updateVocabulary(
     @GetUser() user: UserPayload,
     @Param('id') id: number,
@@ -77,6 +89,7 @@ export class VocabularyController {
   ) {
     return await this.vocabularyService.updateVocabulary(
       id,
+      user.id,
       updateVocabularyDto,
     );
   }
