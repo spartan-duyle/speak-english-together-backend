@@ -11,15 +11,19 @@ export class FirebaseService {
   constructor() {
     const { project_id, client_email, private_key } = serviceAccount;
 
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId: project_id,
-        clientEmail: client_email,
-        privateKey: private_key,
-      }),
-      storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-      databaseURL: process.env.FIREBASE_DATABASE_URL,
-    });
+    if (admin.apps.length === 0) {
+      admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId: project_id,
+          clientEmail: client_email,
+          privateKey: private_key,
+        }),
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+        databaseURL: process.env.FIREBASE_DATABASE_URL,
+      });
+    } else {
+      admin.app();
+    }
     this.storage = admin.storage();
     this.firestore = admin.firestore();
   }

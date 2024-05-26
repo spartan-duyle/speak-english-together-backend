@@ -21,6 +21,7 @@ import { OpenaiService } from './modules/externals/openai/openai.service';
 import { CacheModule } from '@nestjs/cache-manager';
 import { VocabularyModule } from '@/modules/internals/vocabulary/vocabulary.module';
 import { redisStore } from 'cache-manager-redis-yet';
+import { GoogleSpeechModule } from './google-speech/google-speech.module';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { redisStore } from 'cache-manager-redis-yet';
       inject: [ConfigService],
     }),
     VocabularyModule,
+    GoogleSpeechModule,
   ],
   controllers: [],
   providers: [OpenaiService],
