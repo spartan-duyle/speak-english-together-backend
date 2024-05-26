@@ -12,4 +12,8 @@ model Vocabulary {
   // Define a many-to-one relationship with User
   user                User     @relation(fields: [user_id], references: [id])
   user_id             Int
+
+  vocabulary_topic_id Int?
+  vocabulary_topic  VocabularyTopic? @relation(fields: [vocabulary_topic_id], references: [id])
+  @@index([vocabulary_topic_id])
 }

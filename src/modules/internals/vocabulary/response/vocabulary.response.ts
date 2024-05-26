@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { ExampleSentenceDto } from '@/modules/internals/vocabulary/dto/exampleSentence.dto';
+import { VocabularyTopicDto } from '@/modules/internals/vocabularyTopic/dto/vocabularyTopicDto';
+import VocabularyTopicResponse from '@/modules/internals/vocabularyTopic/response/vocabularyTopic.response';
 
 export class VocabularyResponse {
   @Expose()
@@ -43,4 +45,11 @@ export class VocabularyResponse {
   @Expose()
   @ApiProperty({ type: 'number', description: 'Id of the user' })
   user_id: number;
+
+  @Expose()
+  @ApiProperty({
+    type: VocabularyTopicResponse,
+    description: 'Vocabulary topic',
+  })
+  topic?: VocabularyTopicResponse;
 }
