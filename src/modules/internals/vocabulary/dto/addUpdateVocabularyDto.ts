@@ -7,6 +7,14 @@ export class AddUpdateVocabularyDto {
   @ApiProperty({ type: 'string', description: 'Word to add', required: true })
   word: string;
 
+  @ApiProperty({
+    type: 'string',
+    description: 'Audio URL of the source text',
+    required: false,
+  })
+  @IsOptional()
+  word_audio_url: string;
+
   @IsString()
   @ApiProperty({
     type: 'string',
@@ -14,6 +22,14 @@ export class AddUpdateVocabularyDto {
     required: true,
   })
   meaning: string;
+
+  @ApiProperty({
+    type: 'string',
+    description: 'Audio URL of the output text',
+    required: false,
+  })
+  @IsOptional()
+  meaning_audio_url: string;
 
   @ApiProperty({
     type: [ExampleSentenceDto],

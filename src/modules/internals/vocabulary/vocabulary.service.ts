@@ -6,16 +6,32 @@ import { plainToInstanceCustom } from '@/common/helpers/helpers';
 import { ExampleSentenceDto } from '@/modules/internals/vocabulary/dto/exampleSentence.dto';
 import { ListVocabularyResponse } from '@/modules/internals/vocabulary/response/listVocabulary.response';
 import { ErrorMessages } from '@/common/exceptions/errorMessage.exception';
+import { GoogleSpeechService } from '@/google-speech/google-speech.service';
 
 @Injectable()
 export class VocabularyService {
-  constructor(private readonly vocabularyRepository: VocabularyRepository) {}
+  constructor(
+    private readonly vocabularyRepository: VocabularyRepository,
+    private readonly googleSpeechService: GoogleSpeechService,
+  ) {}
 
   async create(
     data: AddUpdateVocabularyDto,
     userId: number,
   ): Promise<VocabularyResponse> {
+    if (!data.word_audio_url) {
+      data.word_audio_url = await this.googleSpeechService.textToSpeech(
+        data.word,
+      );
+    }
+    if (!data.meaning_audio_url) {
+      data.meaning_audio_url = await this.googleSpeechService.textToSpeech(
+        data.meaning,
+      );
+    }
+
     const result = await this.vocabularyRepository.create(data, userId);
+    console.log('result', result);
     const vocabularyResponse = plainToInstanceCustom(
       VocabularyResponse,
       result,

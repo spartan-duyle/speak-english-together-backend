@@ -9,7 +9,9 @@ export class VocabularyRepository {
     return this.prismaService.vocabulary.create({
       data: {
         word: data.word,
+        word_audio_url: data.word_audio_url,
         meaning: data.meaning,
+        meaning_audio_url: data.meaning_audio_url,
         examples: data.examples,
         context: data.context,
         user: {
