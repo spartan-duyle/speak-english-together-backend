@@ -15,4 +15,6 @@ model User {
   room_member   RoomMember[]
   followers Follower[] @relation("Followed")
   following Follower[] @relation("Follower")
+  vocabularies Vocabulary[]
+  vocabulary_topics VocabularyTopic[]
 }
