@@ -26,8 +26,17 @@ services:
     networks:
       - postgres
 
+  redis:
+    container_name: cache
+    image: redis
+    ports:
+      - 6379:6379
+    volumes:
+      - redis:/data
+
 networks:
   postgres:
     driver: bridge
 volumes:
   pgdata:
+  redis:

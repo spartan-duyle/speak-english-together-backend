@@ -1,5 +1,4 @@
 import * as process from 'node:process';
-
 export default () => ({
   app: {
     env: process.env.APP_ENV || 'development',
@@ -38,5 +37,12 @@ export default () => ({
     messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
     appId: process.env.FIREBASE_APP_ID,
     measurementId: process.env.FIREBASE_MEASUREMENT_ID,
+  },
+  redis: {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: parseInt(process.env.REDIS_PORT, 10) || 6379,
+  },
+  openai: {
+    apiKey: process.env.OPENAI_API_KEY,
   },
 });

@@ -25,6 +25,19 @@ export class FileService {
     }
   }
 
+  async uploadAudio(audioContent: Buffer): Promise<string> {
+    try {
+      const extension = '.mp3';
+      const storagePath = `audio/${Date.now()}_${Math.random().toString(36).substring(7)}${extension}`;
+
+      return await this.uploadToFirebaseStorage(audioContent, storagePath);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Failed to upload audio file: ${error.message}`,
+      );
+    }
+  }
+
   private async uploadToFirebaseStorage(
     fileBuffer: Buffer,
     storagePath: string,

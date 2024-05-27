@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import Joi from '@hapi/joi'; // Import Joi from '@hapi/joi'
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import Joi from '@hapi/joi';
 import { PrismaModule } from './database/prisma/prisma.module';
 import { UserModule } from '@/modules/internals/user/user.module';
 import { AuthenticationModule } from './authentication/authentication.module';
@@ -13,6 +13,16 @@ import { RoomMemberModule } from '@/modules/internals/roomMember/roomMember.modu
 import { VideoSDKModule } from '@/modules/externals/videoSDK/videoSDK.module';
 import AppConfig from './config/config';
 import { FollowerModule } from '@/modules/internals/follower/follower.module';
+import { GoogleTranslateModule } from '@/modules/externals/google-translate/google-translate.module';
+import { TranslateModule } from '@/modules/internals/translate/translate.module';
+import { RedisCacheModule } from './redis/redisCacheModule';
+import { OpenaiModule } from '@/modules/externals/openai/openai.module';
+import { OpenaiService } from './modules/externals/openai/openai.service';
+import { CacheModule } from '@nestjs/cache-manager';
+import { VocabularyModule } from '@/modules/internals/vocabulary/vocabulary.module';
+import { redisStore } from 'cache-manager-redis-yet';
+import { GoogleSpeechModule } from './google-speech/google-speech.module';
+import { VocabularyTopicModule } from '@/modules/internals/vocabularyTopic/vocabularyTopic.module';
 
 @Module({
   imports: [
@@ -39,8 +49,28 @@ import { FollowerModule } from '@/modules/internals/follower/follower.module';
     VideoSDKModule,
     FollowerModule,
     FirebaseModule,
+    GoogleTranslateModule,
+    TranslateModule,
+    RedisCacheModule,
+    OpenaiModule,
+    CacheModule.registerAsync({
+      isGlobal: true,
+      useFactory: async (config) => {
+        const store = await redisStore({
+          socket: {
+            host: config.get('redis.host'),
+            port: config.get('redis.port'),
+          },
+        });
+        return { store };
+      },
+      inject: [ConfigService],
+    }),
+    VocabularyModule,
+    GoogleSpeechModule,
+    VocabularyTopicModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [OpenaiService],
 })
 export class AppModule {}
