@@ -17,7 +17,7 @@ import { GetUser } from '@/common/decorators/get-user.decorator';
 import { UserPayload } from '@/authentication/types/user.payload';
 import { AddUpdateVocabularyDto } from '@/modules/internals/vocabulary/dto/addUpdateVocabularyDto';
 import { VocabularyResponse } from '@/modules/internals/vocabulary/response/vocabulary.response';
-import { ApiOkResponse, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ListVocabularyResponse } from '@/modules/internals/vocabulary/response/listVocabulary.response';
 
 @Controller('vocabulary')
@@ -46,14 +46,14 @@ export class VocabularyController {
     @Query('page') page: number = null,
     @Query('perPage') perPage: number = null,
     @Query('search') search: string = '',
-    @Query('topicId') vocabularyTopicId: number = null,
+    @Query('collectionId') collectionId: number = null,
   ): Promise<ListVocabularyResponse> {
     return await this.vocabularyService.getVocabularies(
       user.id,
       page,
       perPage,
       search,
-      vocabularyTopicId,
+      collectionId,
     );
   }
 

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 
-export default class VocabularyTopicResponse {
+export default class CollectionResponse {
   @ApiProperty({ type: 'number' })
   @Expose()
   id: number;
@@ -13,4 +13,12 @@ export default class VocabularyTopicResponse {
   @ApiProperty({ type: 'string' })
   @Expose()
   description?: string;
+
+  @ApiProperty({ type: 'string' })
+  @Expose()
+  image_url?: string;
+
+  @ApiProperty({ type: 'number' })
+  @Expose()
+  number_of_vocabularies: number;
 }

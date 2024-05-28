@@ -19,29 +19,17 @@ export class VocabularyRepository {
           id: userId,
         },
       },
-    };
-
-    // Check if topic_id is provided and valid
-    if (data.topic_id) {
-      const topicExists = await this.prismaService.vocabularyTopic.findUnique({
-        where: {
-          id: data.topic_id,
+      collection: {
+        connect: {
+          id: data.collection_id,
         },
-      });
-
-      if (topicExists) {
-        createData.vocabulary_topic = {
-          connect: {
-            id: data.topic_id,
-          },
-        };
-      }
-    }
+      },
+    };
 
     return this.prismaService.vocabulary.create({
       data: createData,
       include: {
-        vocabulary_topic: true, // Include the connected topic
+        collection: true, // Include the connected topic
       },
     });
   }
@@ -58,14 +46,14 @@ export class VocabularyRepository {
         context: data.context,
         word_audio_url: data.word_audio_url,
         meaning_audio_url: data.meaning_audio_url,
-        vocabulary_topic: {
+        collection: {
           connect: {
             id: data.topic_id,
           },
         },
       },
       include: {
-        vocabulary_topic: true,
+        collection: true,
       },
     });
   }
@@ -86,7 +74,7 @@ export class VocabularyRepository {
     page: number,
     perPage: number,
     search: string,
-    vocabularyTopicId?: number,
+    collectionId?: number,
   ) {
     const whereCondition: Prisma.VocabularyWhereInput = {
       user_id: userId,
@@ -111,20 +99,18 @@ export class VocabularyRepository {
       ],
     };
 
-    if (vocabularyTopicId) {
-      // Filter by the topic's ID using the nested relation
-      whereCondition.vocabulary_topic = {
-        id: vocabularyTopicId,
+    if (collectionId) {
+      // Filter by the collection's ID using the nested relation
+      whereCondition.collection = {
+        id: collectionId,
       };
     }
-
-    console.log(whereCondition);
 
     const data = await this.prismaService.vocabulary.findMany({
       where: whereCondition,
       skip: (page - 1) * perPage,
       include: {
-        vocabulary_topic: true,
+        collection: true,
       },
       take: perPage,
       orderBy: {
@@ -139,10 +125,10 @@ export class VocabularyRepository {
     return { data, total };
   }
 
-  async batchDeleteByTopicId(vocabularyTopicId: number) {
+  async batchDeleteByCollectionId(collectionId: number) {
     return this.prismaService.vocabulary.updateMany({
       where: {
-        vocabulary_topic_id: vocabularyTopicId,
+        collection_id: collectionId,
       },
       data: {
         deleted_at: new Date(),
@@ -158,7 +144,16 @@ export class VocabularyRepository {
         deleted_at: null,
       },
       include: {
-        vocabulary_topic: true,
+        collection: true,
+      },
+    });
+  }
+
+  async countByCollectionId(collectionId: number) {
+    return this.prismaService.vocabulary.count({
+      where: {
+        deleted_at: null,
+        collection_id: collectionId,
       },
     });
   }
