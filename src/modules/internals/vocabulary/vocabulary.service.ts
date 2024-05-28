@@ -7,16 +7,15 @@ import { ExampleSentenceDto } from '@/modules/internals/vocabulary/dto/exampleSe
 import { ListVocabularyResponse } from '@/modules/internals/vocabulary/response/listVocabulary.response';
 import { ErrorMessages } from '@/common/exceptions/errorMessage.exception';
 import { GoogleSpeechService } from '@/google-speech/google-speech.service';
-import { VocabularyTopicDto } from '@/modules/internals/vocabularyTopic/dto/vocabularyTopicDto';
-import VocabularyTopicResponse from '@/modules/internals/vocabularyTopic/response/vocabularyTopic.response';
-import { VocabularyTopicRepository } from '@/modules/internals/vocabularyTopic/vocabularyTopic.repository';
+import CollectionResponse from '@/modules/internals/collection/response/collection.response';
+import { CollectionRepository } from '@/modules/internals/collection/collection.repository';
 
 @Injectable()
 export class VocabularyService {
   constructor(
     private readonly vocabularyRepository: VocabularyRepository,
     private readonly googleSpeechService: GoogleSpeechService,
-    private readonly vocabularyTopicRepository: VocabularyTopicRepository,
+    private readonly vocabularyTopicRepository: CollectionRepository,
   ) {}
 
   async create(
@@ -34,14 +33,13 @@ export class VocabularyService {
       );
     }
 
-    if (data.topic_id) {
-      const topic = await this.vocabularyTopicRepository.findByIdAndUserId(
-        data.topic_id,
-        userId,
-      );
-      if (!topic) {
-        throw new NotFoundException(ErrorMessages.VOCABULARY_TOPIC.NOT_FOUND);
-      }
+    const collection = await this.vocabularyTopicRepository.findByIdAndUserId(
+      data.collection_id,
+      userId,
+    );
+
+    if (!collection) {
+      throw new NotFoundException(ErrorMessages.COLLECTION.NOT_FOUND);
     }
 
     const result = await this.vocabularyRepository.insert(data, userId);
@@ -53,9 +51,9 @@ export class VocabularyService {
       return plainToInstanceCustom(ExampleSentenceDto, item);
     });
 
-    vocabularyResponse.topic = plainToInstanceCustom(
-      VocabularyTopicResponse,
-      result.vocabulary_topic,
+    vocabularyResponse.collection = plainToInstanceCustom(
+      CollectionResponse,
+      result.collection,
     );
 
     return vocabularyResponse;
@@ -66,14 +64,14 @@ export class VocabularyService {
     page: number,
     perPage: number,
     search: string,
-    vocabularyTopicId?: number,
+    collectionId?: number,
   ): Promise<ListVocabularyResponse> {
     const { data, total } = await this.vocabularyRepository.getVocabularies(
       userId,
       page || 1,
       perPage || 10,
       search,
-      vocabularyTopicId,
+      collectionId,
     );
 
     const vocabularies = data.map((item) => {
@@ -85,9 +83,9 @@ export class VocabularyService {
         return plainToInstanceCustom(ExampleSentenceDto, example);
       });
 
-      vocabularyResponse.topic = plainToInstanceCustom(
-        VocabularyTopicResponse,
-        item.vocabulary_topic,
+      vocabularyResponse.collection = plainToInstanceCustom(
+        CollectionResponse,
+        item.collection,
       );
 
       return vocabularyResponse;
@@ -113,9 +111,9 @@ export class VocabularyService {
     vocabularyResponse.examples = data.examples.map((item) => {
       return plainToInstanceCustom(ExampleSentenceDto, item);
     });
-    vocabularyResponse.topic = plainToInstanceCustom(
-      VocabularyTopicResponse,
-      data.vocabulary_topic,
+    vocabularyResponse.collection = plainToInstanceCustom(
+      CollectionResponse,
+      data.collection,
     );
     return vocabularyResponse;
   }
@@ -147,13 +145,13 @@ export class VocabularyService {
       throw new NotFoundException(ErrorMessages.VOCABULARY.NOT_FOUND);
     }
 
-    if (data.topic_id) {
-      const topic = await this.vocabularyRepository.findByIdAndUserId(
-        data.topic_id,
+    if (data.collection_id) {
+      const collection = await this.vocabularyRepository.findByIdAndUserId(
+        data.collection_id,
         userId,
       );
-      if (!topic) {
-        throw new NotFoundException(ErrorMessages.VOCABULARY_TOPIC.NOT_FOUND);
+      if (!collection) {
+        throw new NotFoundException(ErrorMessages.COLLECTION.NOT_FOUND);
       }
     }
 
@@ -180,9 +178,9 @@ export class VocabularyService {
       return plainToInstanceCustom(ExampleSentenceDto, item);
     });
 
-    vocabularyResponse.topic = plainToInstanceCustom(
-      VocabularyTopicResponse,
-      result.vocabulary_topic,
+    vocabularyResponse.collection = plainToInstanceCustom(
+      CollectionResponse,
+      result.collection,
     );
 
     return vocabularyResponse;

@@ -47,8 +47,8 @@ export class RoomService {
       throw new BadRequestException(ErrorMessages.ROOM.PASSWORD_IS_REQUIRED);
     }
 
-    if (data.topicId) {
-      await this.topicService.getTopicById(data.topicId);
+    if (data.collectionId) {
+      await this.topicService.getTopicById(data.collectionId);
     }
 
     const videoSDKRoomId = await this.videoSDKService.createRoom(
