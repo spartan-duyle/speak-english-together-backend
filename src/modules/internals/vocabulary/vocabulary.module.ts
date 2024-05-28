@@ -4,12 +4,12 @@ import { VocabularyService } from '@/modules/internals/vocabulary/vocabulary.ser
 import { VocabularyRepository } from '@/modules/internals/vocabulary/vocabulary.repository';
 import { PrismaModule } from '@/database/prisma/prisma.module';
 import { GoogleSpeechModule } from '@/google-speech/google-speech.module';
-import { VocabularyTopicRepository } from '@/modules/internals/vocabularyTopic/vocabularyTopic.repository';
+import { CollectionRepository } from '@/modules/internals/collection/collection.repository';
 
 @Module({
   imports: [PrismaModule, GoogleSpeechModule],
   controllers: [VocabularyController],
-  providers: [VocabularyService, VocabularyRepository, VocabularyTopicRepository],
+  providers: [VocabularyService, VocabularyRepository, CollectionRepository],
   exports: [VocabularyRepository, VocabularyService],
 })
 export class VocabularyModule {}

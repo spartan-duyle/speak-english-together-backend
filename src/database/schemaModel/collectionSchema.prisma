@@ -1,10 +1,11 @@
-model VocabularyTopic {
+model Collection {
   id Int @id @default(autoincrement())
   name String
   description String?
   vocabularies  Vocabulary[]
   user_id        Int
   user          User @relation(fields: [user_id], references: [id])
+  image_url String?
   created_at DateTime @default(now())
   updated_at DateTime?
   deleted_at DateTime?

@@ -13,7 +13,7 @@ model Vocabulary {
   user                User     @relation(fields: [user_id], references: [id])
   user_id             Int
 
-  vocabulary_topic_id Int?
-  vocabulary_topic  VocabularyTopic? @relation(fields: [vocabulary_topic_id], references: [id])
-  @@index([vocabulary_topic_id])
+  collection_id Int
+  collection  Collection @relation(fields: [collection_id], references: [id])
+  @@index([collection_id])
 }

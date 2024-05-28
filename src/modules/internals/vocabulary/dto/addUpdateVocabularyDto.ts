@@ -48,9 +48,9 @@ export class AddUpdateVocabularyDto {
 
   @ApiProperty({
     type: 'number',
-    description: 'Vocabulary topic ID',
+    description: 'Collection ID',
     required: false,
   })
   @IsOptional()
-  topic_id?: number;
+  collection_id: number;
 }
