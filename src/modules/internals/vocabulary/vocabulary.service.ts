@@ -15,7 +15,7 @@ export class VocabularyService {
   constructor(
     private readonly vocabularyRepository: VocabularyRepository,
     private readonly googleSpeechService: GoogleSpeechService,
-    private readonly vocabularyTopicRepository: CollectionRepository,
+    private readonly collectionRepository: CollectionRepository,
   ) {}
 
   async create(
@@ -33,7 +33,7 @@ export class VocabularyService {
       );
     }
 
-    const collection = await this.vocabularyTopicRepository.findByIdAndUserId(
+    const collection = await this.collectionRepository.findByIdAndUserId(
       data.collection_id,
       userId,
     );
@@ -145,14 +145,13 @@ export class VocabularyService {
       throw new NotFoundException(ErrorMessages.VOCABULARY.NOT_FOUND);
     }
 
-    if (data.collection_id) {
-      const collection = await this.vocabularyRepository.findByIdAndUserId(
-        data.collection_id,
-        userId,
-      );
-      if (!collection) {
-        throw new NotFoundException(ErrorMessages.COLLECTION.NOT_FOUND);
-      }
+    const collection = await this.collectionRepository.findByIdAndUserId(
+      data.collection_id,
+      userId,
+    );
+
+    if (!collection) {
+      throw new NotFoundException(ErrorMessages.COLLECTION.NOT_FOUND);
     }
 
     if (vocabulary.word !== data.word) {

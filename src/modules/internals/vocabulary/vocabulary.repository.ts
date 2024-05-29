@@ -48,7 +48,7 @@ export class VocabularyRepository {
         meaning_audio_url: data.meaning_audio_url,
         collection: {
           connect: {
-            id: data.topic_id,
+            id: data.collection_id,
           },
         },
       },
