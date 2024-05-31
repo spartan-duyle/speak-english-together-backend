@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import UserLevel from '../enum/userLevel.enum';
+import UserLevel from '@/common/enum/userLevel.enum';
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class CreateUserDto {

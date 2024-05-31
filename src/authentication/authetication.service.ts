@@ -1,6 +1,6 @@
 import * as bcrypt from 'bcrypt';
 import RegisterDto from './dto/register.dto';
-import { UserStatus } from '@/modules/internals/user/enum/userStatus.enum';
+import { UserStatus } from '@/common/enum/userStatus.enum';
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { pick } from 'lodash';
 import { JwtService } from '@nestjs/jwt';

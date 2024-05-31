@@ -1,7 +1,7 @@
 import { PrismaService } from '@/database/prisma/prisma.serivce';
 import { Injectable } from '@nestjs/common';
-import { UserStatus } from '@/modules/internals/user/enum/userStatus.enum';
-import UserLevel from '@/modules/internals/user/enum/userLevel.enum';
+import { UserStatus } from '@/common/enum/userStatus.enum';
+import UserLevel from '@/common/enum/userLevel.enum';
 
 @Injectable()
 export default class UserRepository {

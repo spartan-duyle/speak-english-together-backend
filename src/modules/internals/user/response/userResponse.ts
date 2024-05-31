@@ -1,4 +1,4 @@
-import UserLevel from '../enum/userLevel.enum';
+import UserLevel from '@/common/enum/userLevel.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 
