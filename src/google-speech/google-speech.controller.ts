@@ -1,15 +1,19 @@
-import { Body, Controller, HttpCode, Post, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ApiBody, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { TextToSpeechDto } from '@/google-speech/dto/textToSpeech.dto';
 import { GoogleSpeechService } from '@/google-speech/google-speech.service';
 import { VerifyGuard } from '@/common/guards/verify.guard';
 import { UserGuard } from '@/common/guards/auth.guard';
-import { SpeechToTextDto } from '@/google-speech/dto/speechToText.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage, memoryStorage } from 'multer';
-import { v4 as uuidv4 } from 'uuid';
-import { join } from 'path';
-import * as fs from 'fs';
+import { memoryStorage } from 'multer';
 
 @Controller('google-speech')
 @ApiTags('Google Speech')
@@ -36,6 +40,7 @@ export class GoogleSpeechController {
       storage: memoryStorage(),
     }),
   )
+  @ApiOkResponse({ type: String, description: 'Transcription' })
   async handleUpload(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
       throw new Error('No file uploaded');

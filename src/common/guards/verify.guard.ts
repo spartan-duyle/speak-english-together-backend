@@ -5,7 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { UserStatus } from '@/modules/internals/user/enum/userStatus.enum';
+import { UserStatus } from '@/common/enum/userStatus.enum';
 
 @Injectable()
 export class VerifyGuard implements CanActivate {

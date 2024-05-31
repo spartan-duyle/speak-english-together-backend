@@ -8,7 +8,7 @@ import {
 } from '@nestjs/swagger';
 import { UserGuard } from '@/common/guards/auth.guard';
 import { VerifyGuard } from '@/common/guards/verify.guard';
-import { OpenaiService } from '@/modules/externals/openai/openai.service';
+import { OpenaiService } from '@/modules/internals/openai/openai.service';
 
 @Controller('translate')
 @ApiTags('translate')
