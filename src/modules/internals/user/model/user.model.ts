@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
-import { UserLevel } from '../enum/userLevel.enum';
-import { Role } from '../enum/role.enum';
-import { UserStatus } from '../enum/userStatus.enum';
+import { UserLevel } from '@/common/enum/userLevel.enum';
+import { Role } from '@/common/enum/role.enum';
+import { UserStatus } from '@/common/enum/userStatus.enum';
 
 export class UserModel {
   @Expose()
