@@ -3,10 +3,13 @@ import { TextToSpeechClient } from '@google-cloud/text-to-speech';
 import { RedisCacheService } from '@/redis/redis-cache.service';
 import { FileService } from '@/modules/internals/file/file.service';
 import { GoogleTranslateService } from '@/modules/externals/google-translate/google-translate.service';
+import { protos, SpeechClient } from '@google-cloud/speech';
+import fs from 'fs';
 
 @Injectable()
 export class GoogleSpeechService {
   private ttsClient: TextToSpeechClient;
+  private speechClient: SpeechClient;
 
   constructor(
     private readonly cacheService: RedisCacheService,
@@ -14,6 +17,10 @@ export class GoogleSpeechService {
     private readonly googleTranslateService: GoogleTranslateService,
   ) {
     this.ttsClient = new TextToSpeechClient({
+      keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+    });
+
+    this.speechClient = new SpeechClient({
       keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
     });
   }
@@ -63,6 +70,37 @@ export class GoogleSpeechService {
       throw new InternalServerErrorException(
         `Failed to generate audio: ${error.message}`,
       );
+    }
+  }
+
+  async speechToText(audioBuffer: Buffer): Promise<string> {
+    try {
+      const audioContent = audioBuffer.toString('base64');
+
+      const request: protos.google.cloud.speech.v1.IRecognizeRequest = {
+        audio: {
+          content: audioContent,
+        },
+        config: {
+          encoding:
+            protos.google.cloud.speech.v1.RecognitionConfig.AudioEncoding
+              .WEBM_OPUS,
+          sampleRateHertz: 16000, // Adjust the sample rate as needed
+          languageCode: 'en-US', // Adjust language code as needed
+        },
+      };
+
+      const [response] = await this.speechClient.recognize(request);
+
+      if (!response.results || response.results.length === 0) {
+        throw new Error('No transcription results');
+      }
+
+      return response.results
+        .map((result) => result.alternatives[0].transcript)
+        .join('\n');
+    } catch (error) {
+      return error;
     }
   }
 }
