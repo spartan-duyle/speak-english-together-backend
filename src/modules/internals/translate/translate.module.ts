@@ -4,7 +4,7 @@ import { TranslateController } from '@/modules/internals/translate/translate.con
 import { GoogleTranslateService } from '@/modules/externals/google-translate/google-translate.service';
 import { Translate } from '@google-cloud/translate/build/src/v2';
 import OpenAI from 'openai';
-import { OpenaiService } from '@/modules/externals/openai/openai.service';
+import { OpenaiService } from '@/modules/internals/openai/openai.service';
 import { RedisCacheModule } from '@/redis/redisCacheModule';
 
 @Module({
