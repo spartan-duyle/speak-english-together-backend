@@ -1,8 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
 import { ConfigService } from '@nestjs/config';
 import { RedisCacheService } from '@/redis/redis-cache.service';
 import GenerateSpeakingQuestionDto from '@/modules/internals/openai/dto/generateSpeakingQuestion.dto';
+import AnalyzeTextDto from '@/modules/internals/openai/dto/analyzeText.dto';
+import { UserPayload } from '@/authentication/types/user.payload';
 
 @Injectable()
 export class OpenaiService {
@@ -53,9 +55,8 @@ export class OpenaiService {
     }.\n\nPhrase: '${phrase}'`;
 
     try {
-      // Make the request to the OpenAI API
       const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o', // Assuming 'gpt-4' is the correct model name
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
@@ -84,7 +85,6 @@ export class OpenaiService {
         await this.cacheService.set(cacheKey, successResponse, 86400 * 30);
         return successResponse;
       } else {
-        // If the response does not contain expected data, return 'not_found' status
         const notFoundResponse = { status: 'not_found' };
         await this.cacheService.set(cacheKey, notFoundResponse, 86400 * 30);
         return notFoundResponse;
@@ -96,8 +96,6 @@ export class OpenaiService {
   }
 
   async generateSpeakingQuestion(data: GenerateSpeakingQuestionDto) {
-    // Implement the logic to generate a speaking question
-    // You can use the userId to personalize the question
     const prompt = `Please generate a question and suggestions (Level ${data.level}) about the topic of ${data.topic} to assist me in practicing English speaking skills.
 
                             Your response should follow this format:
@@ -120,7 +118,7 @@ export class OpenaiService {
     try {
       // Make the request to the OpenAI API
       const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o', // Assuming 'gpt-4' is the correct model name
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
@@ -142,6 +140,60 @@ export class OpenaiService {
       return { ...jsonOutput, status: 'success' };
     } catch (error) {
       throw new Error('Question generation service is currently unavailable.');
+    }
+  }
+
+  async analyzeText(user: UserPayload, data: AnalyzeTextDto) {
+    const question = data.question;
+    const text = data.text;
+    const prompt = `Analyze the following text: ${text}.
+  If a specific question is provided, focus the analysis on that topic: "${question}".
+  If the text does not match the question or is irrelevant, state that clearly.
+  If no question is provided, analyze the text generally.
+  The analysis should cover the following aspects:
+  - Overall comment on the text, highlighting key points or issues
+  - Updated text with corrections or suggestions (if the text is relevant or no question is provided)
+  - Suggestions for improving the text (if the text is relevant or no question is provided)
+
+  Use simple and accessible language. Provide the analysis in the following JSON structure:
+  {
+    "overall_comment": "General feedback on the text",
+    "updated_text": "Updated text with corrections or suggestions",
+    "translated_updated_text": "Translate the updated text to the user's language: ${user.nationality}",
+    "suggestions": [
+      "Suggestion 1 for improving the text",
+      "Suggestion 2 for improving the text",
+      "Suggestion 3 for improving the text",
+      ...
+    ],
+    "relevance_to_question": "Does the text ${text} match with the topic ${question}? Please answer with 'Yes' or 'No'. If no question is provided, write 'N/A'."
+  }`;
+
+    try {
+      // Make the request to the OpenAI API
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-4',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a text analysis expert. If you cannot analyze the text, write "I could not find an answer."',
+          },
+          { role: 'user', content: prompt },
+        ],
+      });
+
+      const output = response.choices[0].message.content.trim();
+
+      if (output === 'I could not find an answer.') {
+        return { status: 'failed' };
+      }
+
+      const jsonOutput = JSON.parse(output);
+
+      return { ...jsonOutput, status: 'success' };
+    } catch (error) {
+      throw new Error('Text analysis service is currently unavailable.');
     }
   }
 }
