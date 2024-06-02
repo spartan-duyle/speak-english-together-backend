@@ -1,10 +1,9 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { TextToSpeechClient } from '@google-cloud/text-to-speech';
 import { RedisCacheService } from '@/redis/redis-cache.service';
 import { FileService } from '@/modules/internals/file/file.service';
 import { GoogleTranslateService } from '@/modules/externals/google-translate/google-translate.service';
 import { protos, SpeechClient } from '@google-cloud/speech';
-import fs from 'fs';
 
 @Injectable()
 export class GoogleSpeechService {
@@ -60,7 +59,8 @@ export class GoogleSpeechService {
         : Buffer.from(response.audioContent as Uint8Array);
 
       // Upload the audio content to Firebase Storage
-      const audioUrl = await this.fileService.uploadAudio(audioContent);
+      const audioUrl = (await this.fileService.uploadAudio(audioContent))
+        .publicUrl;
 
       // Cache the audio URL for 1 day
       await this.cacheService.set(cacheKey, audioUrl, 86400); // Cache for 1 day
@@ -73,32 +73,47 @@ export class GoogleSpeechService {
     }
   }
 
-  async speechToText(audioBuffer: Buffer): Promise<string> {
+  async speechToText(audioBuffer: Buffer): Promise<{
+    transcription: string;
+    audioUrl: string;
+  }> {
     try {
-      const audioContent = audioBuffer.toString('base64');
+      const { publicUrl, gcsUri } =
+        await this.fileService.uploadAudio(audioBuffer);
 
-      const request: protos.google.cloud.speech.v1.IRecognizeRequest = {
-        audio: {
-          content: audioContent,
-        },
-        config: {
-          encoding:
-            protos.google.cloud.speech.v1.RecognitionConfig.AudioEncoding
-              .WEBM_OPUS,
-          sampleRateHertz: 48000,
-          languageCode: 'en-US',
-        },
-      };
+      const request: protos.google.cloud.speech.v1.ILongRunningRecognizeRequest =
+        {
+          audio: {
+            uri: gcsUri,
+          },
+          config: {
+            encoding:
+              protos.google.cloud.speech.v1.RecognitionConfig.AudioEncoding
+                .MP3,
+            sampleRateHertz: 16000,
+            languageCode: 'en-US',
+          },
+        };
 
       const [response] = await this.speechClient.recognize(request);
 
-      if (!response.results || response.results.length === 0) {
-        throw new Error('No transcription results');
+      if (
+        !response.results ||
+        response.results.length === 0 ||
+        response.results[0].alternatives[0].transcript.length === 0
+      ) {
+        throw new BadRequestException(
+          'Cannot hear your speech, please try again',
+        );
       }
 
-      return response.results
+      const transcript = response.results
         .map((result) => result.alternatives[0].transcript)
         .join('\n');
+      return {
+        transcription: transcript,
+        audioUrl: publicUrl,
+      };
     } catch (error) {
       return error;
     }
