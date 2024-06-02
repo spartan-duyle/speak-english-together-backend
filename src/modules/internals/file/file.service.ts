@@ -17,7 +17,11 @@ export class FileService {
       });
 
       const storagePath = `images/${Date.now()}_${sanitizedBaseName}${extension}`;
-      return await this.uploadToFirebaseStorage(file.buffer, storagePath);
+      const { publicUrl } = await this.uploadToFirebaseStorage(
+        file.buffer,
+        storagePath,
+      );
+      return publicUrl;
     } catch (error) {
       throw new InternalServerErrorException(
         `Failed to upload file: ${error.message}`,
@@ -25,12 +29,18 @@ export class FileService {
     }
   }
 
-  async uploadAudio(audioContent: Buffer): Promise<string> {
+  async uploadAudio(
+    audioContent: Buffer,
+  ): Promise<{ publicUrl: string; gcsUri: string }> {
     try {
       const extension = '.mp3';
       const storagePath = `audio/${Date.now()}_${Math.random().toString(36).substring(7)}${extension}`;
 
-      return await this.uploadToFirebaseStorage(audioContent, storagePath);
+      const { publicUrl, gcsUri } = await this.uploadToFirebaseStorage(
+        audioContent,
+        storagePath,
+      );
+      return { publicUrl, gcsUri };
     } catch (error) {
       throw new InternalServerErrorException(
         `Failed to upload audio file: ${error.message}`,
@@ -41,7 +51,7 @@ export class FileService {
   private async uploadToFirebaseStorage(
     fileBuffer: Buffer,
     storagePath: string,
-  ): Promise<string> {
+  ): Promise<{ publicUrl: string; gcsUri: string }> {
     const storage = this.firebaseService.getStorageInstance();
     const bucket = storage.bucket();
 
@@ -57,7 +67,8 @@ export class FileService {
         try {
           await blob.makePublic();
           const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
-          resolve(publicUrl);
+          const gcsUri = `gs://${bucket.name}/${blob.name}`;
+          resolve({ publicUrl, gcsUri });
         } catch (error) {
           reject(error);
         }

@@ -14,6 +14,7 @@ import { VerifyGuard } from '@/common/guards/verify.guard';
 import { UserGuard } from '@/common/guards/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
+import SpeechToTextResponse from '@/google-speech/response/speechToText.response';
 
 @Controller('google-speech')
 @ApiTags('Google Speech')
@@ -40,15 +41,15 @@ export class GoogleSpeechController {
       storage: memoryStorage(),
     }),
   )
-  @ApiOkResponse({ type: String, description: 'Transcription' })
-  async handleUpload(@UploadedFile() file: Express.Multer.File) {
+  @ApiOkResponse({ type: SpeechToTextResponse })
+  async handleUpload(
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<SpeechToTextResponse> {
     if (!file) {
       throw new Error('No file uploaded');
     }
 
-    const transcription = await this.googleSpeechService.speechToText(
-      file.buffer,
-    );
-    return { transcription };
+    const result = await this.googleSpeechService.speechToText(file.buffer);
+    return { transcription: result.transcription, audioUrl: result.audioUrl };
   }
 }

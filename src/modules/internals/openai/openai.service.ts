@@ -193,6 +193,7 @@ export class OpenaiService {
 
       return { ...jsonOutput, status: 'success' };
     } catch (error) {
+      console.log('Error fetching text analysis:', error);
       throw new Error('Text analysis service is currently unavailable.');
     }
   }
