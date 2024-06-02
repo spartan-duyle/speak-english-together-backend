@@ -17,4 +17,5 @@ model User {
   following Follower[] @relation("Follower")
   vocabularies Vocabulary[]
   vocabulary_topics Collection[]
+  paragraphs Paragraph[]
 }

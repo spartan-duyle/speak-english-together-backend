@@ -26,6 +26,23 @@ generator client {
   deleted_at DateTime?
   followed User @relation("Followed", fields: [followed_id], references: [id])
   follower User @relation("Follower", fields: [follower_id], references: [id])
+}model Paragraph {
+  id                      Int       @id @default(autoincrement())
+  user                    User      @relation(fields: [user_id], references: [id])
+  user_id                 Int
+  question                String?
+  original_text           String
+  audio_link              String?
+  updated_text            String?
+  translated_updated_text String?
+  overall_comment         String?
+  relevance_to_question   String?
+  created_at              DateTime @default(now())
+  updated_at              DateTime?
+  deleted_at              DateTime?
+
+  // Define the foreign key constraint
+  @@index([user_id], name: "user_id")
 }model RoomMember {
   id Int @id @default(autoincrement())
   room_id Int
@@ -89,6 +106,7 @@ model Topic {
   following Follower[] @relation("Follower")
   vocabularies Vocabulary[]
   vocabulary_topics Collection[]
+  paragraphs Paragraph[]
 }
 model Vocabulary {
   id                  Int      @id @default(autoincrement())
