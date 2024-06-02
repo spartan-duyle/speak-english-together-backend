@@ -85,8 +85,8 @@ export class GoogleSpeechService {
           encoding:
             protos.google.cloud.speech.v1.RecognitionConfig.AudioEncoding
               .WEBM_OPUS,
-          sampleRateHertz: 16000, // Adjust the sample rate as needed
-          languageCode: 'en-US', // Adjust language code as needed
+          sampleRateHertz: 48000,
+          languageCode: 'en-US',
         },
       };
 
