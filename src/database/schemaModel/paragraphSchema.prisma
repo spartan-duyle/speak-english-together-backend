@@ -13,8 +13,7 @@ model Paragraph {
   relevance_to_question   String?
   suggestion_improvements    String[]
   level                   String?
-  topic_id                Int?
-  topic                   Topic?    @relation(fields: [topic_id], references: [id])
+  topic_name                String?
   created_at              DateTime @default(now())
   updated_at              DateTime?
   deleted_at              DateTime?

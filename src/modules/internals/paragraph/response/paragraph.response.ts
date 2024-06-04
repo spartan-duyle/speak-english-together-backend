@@ -30,7 +30,7 @@ export default class ParagraphResponse {
 
   @ApiProperty({ type: String })
   @Expose()
-  audio_url?: string;
+  audio_link?: string;
 
   @ApiProperty({ type: String })
   @Expose()
@@ -48,9 +48,9 @@ export default class ParagraphResponse {
   @Expose()
   overall_comment?: string;
 
-  @ApiProperty({ type: Number })
+  @ApiProperty({ type: String })
   @Expose()
-  topic?: TopicDto;
+  topic_name?: string;
 
   @ApiProperty({ type: String })
   @Expose()
