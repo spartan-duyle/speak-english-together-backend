@@ -30,7 +30,7 @@ export default class ParagraphResponse {
 
   @ApiProperty({ type: String })
   @Expose()
-  audio_link?: string;
+  audio_url?: string;
 
   @ApiProperty({ type: String })
   @Expose()

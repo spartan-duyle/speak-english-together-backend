@@ -23,7 +23,7 @@ export class ParagraphService {
       data.name,
       data.original_text,
       data.question,
-      data.audio_link,
+      data.audio_url,
       data.updated_text,
       data.translated_updated_text,
       data.relevance_to_question,

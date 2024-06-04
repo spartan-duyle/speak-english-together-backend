@@ -23,7 +23,7 @@ export default class ParagraphCreateDto {
 
   @ApiProperty({ type: String })
   @IsOptional()
-  audio_link?: string;
+  audio_url?: string;
 
   @ApiProperty({ type: String })
   @IsOptional()
