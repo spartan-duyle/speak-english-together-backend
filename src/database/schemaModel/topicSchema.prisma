@@ -2,7 +2,6 @@ model Topic {
   id Int @id @default(autoincrement())
   name String @unique
   rooms Room[]
-  paragraphs Paragraph[]
   image String?
   content String?
   created_at DateTime @default(now())

@@ -12,12 +12,12 @@ export default class ParagraphRepository {
     name: string,
     originalText: string,
     question?: string,
-    audioUrl?: string,
+    audioLink?: string,
     updatedText?: string,
     translatedUpdatedText?: string,
     relevanceToQuestion?: string,
     overallComment?: string,
-    topicId?: number,
+    topicName?: string,
     level?: string,
     suggestionAnswers?: string[],
     suggestionImprovements?: string[],
@@ -31,7 +31,7 @@ export default class ParagraphRepository {
         },
       },
       original_text: originalText,
-      audio_link: audioUrl,
+      audio_link: audioLink,
       updated_text: updatedText,
       translated_updated_text: translatedUpdatedText,
       relevance_to_question: relevanceToQuestion,
@@ -39,21 +39,11 @@ export default class ParagraphRepository {
       level: level,
       suggestion_answers: suggestionAnswers,
       suggestion_improvements: suggestionImprovements,
+      topic_name: topicName,
     };
-
-    if (topicId) {
-      data.topic = {
-        connect: {
-          id: topicId,
-        },
-      };
-    }
 
     return this.prismaService.paragraph.create({
       data: data,
-      include: {
-        topic: true,
-      },
     });
   }
 
@@ -83,22 +73,20 @@ export default class ParagraphRepository {
                 mode: 'insensitive',
               },
             },
+            {
+              topic_name: {
+                contains: search,
+                mode: 'insensitive',
+              },
+            },
           ],
         },
       ],
-      ...(topicId && { topic_id: topicId }),
       ...(level && { level: level.toString().toUpperCase() }),
     };
 
     const data = await this.prismaService.paragraph.findMany({
       where: whereClause,
-      include: {
-        topic: {
-          where: {
-            deleted_at: null,
-          },
-        },
-      },
       take: perPage,
       skip: (page - 1) * perPage,
     });
@@ -120,9 +108,6 @@ export default class ParagraphRepository {
         user_id: userId,
         deleted_at: null,
       },
-      include: {
-        topic: true,
-      },
     });
   }
 
@@ -136,9 +121,6 @@ export default class ParagraphRepository {
         name: name,
         updated_at: new Date(),
       },
-      include: {
-        topic: true,
-      },
     });
   }
 
@@ -151,9 +133,6 @@ export default class ParagraphRepository {
       },
       data: {
         deleted_at: new Date(),
-      },
-      include: {
-        topic: true,
       },
     });
   }

@@ -23,7 +23,7 @@ export default class ParagraphCreateDto {
 
   @ApiProperty({ type: String })
   @IsOptional()
-  audio_url?: string;
+  audio_link?: string;
 
   @ApiProperty({ type: String })
   @IsOptional()
@@ -49,7 +49,7 @@ export default class ParagraphCreateDto {
   @IsOptional()
   level?: QuestionLevelEnum;
 
-  @ApiProperty({ type: Number })
+  @ApiProperty({ type: String })
   @IsOptional()
-  topic_id?: number;
+  topic_name?: string;
 }
