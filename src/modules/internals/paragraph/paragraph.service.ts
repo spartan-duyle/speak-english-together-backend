@@ -1,18 +1,35 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import ParagraphCreateDto from '@/modules/internals/paragraph/dto/paragraphCreate.dto';
 import ParagraphRepository from '@/modules/internals/paragraph/paragraph.repository';
 import ParagraphResponse from '@/modules/internals/paragraph/response/paragraph.response';
+import { TopicRepository } from '@/modules/internals/topic/topic.repository';
+import { ErrorMessages } from '@/common/exceptions/errorMessage.exception';
+import { plainToInstanceCustom } from '@/common/helpers/helpers';
+import ListParagraphResponse from '@/modules/internals/paragraph/response/listParagraph.response';
+import { QuestionLevelEnum } from '@/common/enum/questionLevel.enum';
+import { TopicDto } from '@/modules/internals/topic/dto/topic.dto';
 
 @Injectable()
 export class ParagraphService {
-  constructor(private readonly paragraphRepository: ParagraphRepository) {}
+  constructor(
+    private readonly paragraphRepository: ParagraphRepository,
+    private readonly topicRepository: TopicRepository,
+  ) {}
 
   async create(
     userId: number,
     data: ParagraphCreateDto,
   ): Promise<ParagraphResponse> {
-    return await this.paragraphRepository.insert(
+    if (data.topic_id) {
+      const topic = await this.topicRepository.getTopicById(data.topic_id);
+      if (!topic) {
+        throw new NotFoundException(ErrorMessages.TOPIC.NOT_FOUND);
+      }
+    }
+
+    const result = await this.paragraphRepository.insert(
       userId,
+      data.name,
       data.original_text,
       data.question,
       data.audio_url,
@@ -20,6 +37,45 @@ export class ParagraphService {
       data.translated_updated_text,
       data.relevance_to_question,
       data.overall_comment,
+      data.topic_id,
+      data.level,
+      data.suggestion_answers,
+      data.suggestion_improvements,
     );
+
+    const paragraphResponse = plainToInstanceCustom(ParagraphResponse, result);
+    paragraphResponse.topic = plainToInstanceCustom(TopicDto, result.topic);
+    return paragraphResponse;
+  }
+
+  async getAllParagraphs(
+    userId: number,
+    page: number,
+    perPage: number,
+    search: string,
+    topicId: number,
+    level: QuestionLevelEnum,
+  ): Promise<ListParagraphResponse> {
+    const { data, total } = await this.paragraphRepository.getAllParagraphs(
+      userId,
+      page || 1,
+      perPage || 10,
+      search,
+      topicId,
+      level,
+    );
+
+    const paragraphs = data.map((paragraph) => {
+      const paragraphResponse = plainToInstanceCustom(
+        ParagraphResponse,
+        paragraph,
+      );
+      paragraphResponse.topic = paragraph.topic
+        ? plainToInstanceCustom(TopicDto, paragraph.topic)
+        : null;
+      return paragraphResponse;
+    });
+
+    return { data: paragraphs, total };
   }
 }
