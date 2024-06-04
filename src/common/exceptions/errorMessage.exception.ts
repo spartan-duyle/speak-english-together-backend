@@ -44,4 +44,8 @@ export const ErrorMessages = {
     ALREADY_EXISTS: 'Collection already exists',
     NOT_FOUND: 'Collection not found',
   },
+
+  PARAGRAPH: {
+    NOT_FOUND: 'Paragraph not found',
+  },
 };

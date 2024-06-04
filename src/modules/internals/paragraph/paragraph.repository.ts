@@ -22,7 +22,6 @@ export default class ParagraphRepository {
     suggestionAnswers?: string[],
     suggestionImprovements?: string[],
   ) {
-    console.log('suggestionsAnswers', suggestionAnswers);
     const data: any = {
       question: question,
       name: name,
@@ -112,5 +111,50 @@ export default class ParagraphRepository {
       data,
       total,
     };
+  }
+
+  async getParagraphById(userId: number, paragraphId: number) {
+    return this.prismaService.paragraph.findUnique({
+      where: {
+        id: paragraphId,
+        user_id: userId,
+        deleted_at: null,
+      },
+      include: {
+        topic: true,
+      },
+    });
+  }
+
+  async update(userId: number, paragraphId: number, name: string) {
+    return this.prismaService.paragraph.update({
+      where: {
+        id: paragraphId,
+        user_id: userId,
+      },
+      data: {
+        name: name,
+        updated_at: new Date(),
+      },
+      include: {
+        topic: true,
+      },
+    });
+  }
+
+  async deleteParagraph(userId: number, paragraphId: number) {
+    return this.prismaService.paragraph.update({
+      where: {
+        id: paragraphId,
+        user_id: userId,
+        deleted_at: null,
+      },
+      data: {
+        deleted_at: new Date(),
+      },
+      include: {
+        topic: true,
+      },
+    });
   }
 }
