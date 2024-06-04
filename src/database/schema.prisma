@@ -34,7 +34,7 @@ generator client {
   question                String?
   suggestion_answers          String[]
   original_text           String
-  audio_link              String?
+  audio_url              String?
   updated_text            String?
   translated_updated_text String?
   overall_comment         String?
