@@ -8,6 +8,7 @@ import { plainToInstanceCustom } from '@/common/helpers/helpers';
 import ListParagraphResponse from '@/modules/internals/paragraph/response/listParagraph.response';
 import { QuestionLevelEnum } from '@/common/enum/questionLevel.enum';
 import { TopicDto } from '@/modules/internals/topic/dto/topic.dto';
+import { ParagraphUpdateDto } from '@/modules/internals/paragraph/dto/paragraphUpdate.dto';
 
 @Injectable()
 export class ParagraphService {
@@ -77,5 +78,62 @@ export class ParagraphService {
     });
 
     return { data: paragraphs, total };
+  }
+
+  async getParagraphById(
+    userId: number,
+    paragraphId: number,
+  ): Promise<ParagraphResponse> {
+    const result = await this.paragraphRepository.getParagraphById(
+      userId,
+      paragraphId,
+    );
+    if (!result) {
+      throw new NotFoundException(ErrorMessages.PARAGRAPH.NOT_FOUND);
+    }
+
+    const paragraphResponse = plainToInstanceCustom(ParagraphResponse, result);
+    paragraphResponse.topic = plainToInstanceCustom(TopicDto, result.topic);
+    return paragraphResponse;
+  }
+
+  async updateParagraph(
+    userId: number,
+    id: number,
+    data: ParagraphUpdateDto,
+  ): Promise<ParagraphResponse> {
+    const paragraph = await this.paragraphRepository.getParagraphById(
+      userId,
+      id,
+    );
+    if (!paragraph) {
+      throw new NotFoundException(ErrorMessages.PARAGRAPH.NOT_FOUND);
+    }
+    const result = await this.paragraphRepository.update(userId, id, data.name);
+
+    const paragraphResponse = plainToInstanceCustom(ParagraphResponse, result);
+    paragraphResponse.topic = plainToInstanceCustom(TopicDto, result.topic);
+    return paragraphResponse;
+  }
+
+  async deleteParagraph(
+    userId: number,
+    paragraphId: number,
+  ): Promise<ParagraphResponse> {
+    const paragraph = await this.paragraphRepository.getParagraphById(
+      userId,
+      paragraphId,
+    );
+    if (!paragraph) {
+      throw new NotFoundException(ErrorMessages.PARAGRAPH.NOT_FOUND);
+    }
+
+    const result = await this.paragraphRepository.deleteParagraph(
+      userId,
+      paragraphId,
+    );
+    const paragraphResponse = plainToInstanceCustom(ParagraphResponse, result);
+    paragraphResponse.topic = plainToInstanceCustom(TopicDto, result.topic);
+    return paragraphResponse;
   }
 }

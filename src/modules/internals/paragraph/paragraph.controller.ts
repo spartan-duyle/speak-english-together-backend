@@ -1,14 +1,14 @@
 import {
   Body,
-  Controller,
+  Controller, Delete,
   Get,
-  HttpCode,
-  Post,
+  HttpCode, Param,
+  Post, Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import { ParagraphService } from '@/modules/internals/paragraph/paragraph.service';
-import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOkResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { UserPayload } from '@/authentication/types/user.payload';
 import { UserGuard } from '@/common/guards/auth.guard';
@@ -17,6 +17,7 @@ import ParagraphCreateDto from '@/modules/internals/paragraph/dto/paragraphCreat
 import ParagraphResponse from '@/modules/internals/paragraph/response/paragraph.response';
 import { QuestionLevelEnum } from '@/common/enum/questionLevel.enum';
 import ListParagraphResponse from '@/modules/internals/paragraph/response/listParagraph.response';
+import { ParagraphUpdateDto } from '@/modules/internals/paragraph/dto/paragraphUpdate.dto';
 
 @Controller('paragraph')
 @ApiTags('Paragraph')
@@ -40,7 +41,6 @@ export class ParagraphController {
   @Get()
   @UseGuards(UserGuard, VerifyGuard)
   @ApiBody({ type: ParagraphCreateDto })
-  @HttpCode(200)
   async getAllParagraphs(
     @GetUser() user: UserPayload,
     @Query('page') page: number = null,
@@ -57,5 +57,36 @@ export class ParagraphController {
       topicId,
       level,
     );
+  }
+
+  @Get(':id')
+  @UseGuards(UserGuard, VerifyGuard)
+  @ApiOkResponse({ type: ParagraphResponse })
+  async getParagraphById(
+    @GetUser() user: UserPayload,
+    @Param('id') id: number,
+  ): Promise<ParagraphResponse> {
+    return await this.paragraphService.getParagraphById(user.id, id);
+  }
+
+  @Put(':id')
+  @UseGuards(UserGuard, VerifyGuard)
+  @ApiOkResponse({ type: ParagraphResponse })
+  async updateParagraph(
+    @GetUser() user: UserPayload,
+    @Param('id') id: number,
+    @Body() data: ParagraphUpdateDto,
+  ): Promise<ParagraphResponse> {
+    return await this.paragraphService.updateParagraph(user.id, id, data);
+  }
+
+  @Delete(':id')
+  @UseGuards(UserGuard, VerifyGuard)
+  @ApiOkResponse({ type: ParagraphResponse })
+  async deleteParagraph(
+    @GetUser() user: UserPayload,
+    @Param('id') id: number,
+  ): Promise<ParagraphResponse> {
+    return await this.paragraphService.deleteParagraph(user.id, id);
   }
 }
