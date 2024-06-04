@@ -8,6 +8,6 @@ import { TopicRepository } from '@/modules/internals/topic/topic.repository';
   imports: [],
   controllers: [TopicController],
   providers: [TopicService, PrismaService, TopicRepository],
-  exports: [TopicService],
+  exports: [TopicService, TopicRepository],
 })
 export class TopicModule {}

@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ParagraphService } from '@/modules/internals/paragraph/paragraph.service';
@@ -14,6 +15,8 @@ import { UserGuard } from '@/common/guards/auth.guard';
 import { VerifyGuard } from '@/common/guards/verify.guard';
 import ParagraphCreateDto from '@/modules/internals/paragraph/dto/paragraphCreate.dto';
 import ParagraphResponse from '@/modules/internals/paragraph/response/paragraph.response';
+import { QuestionLevelEnum } from '@/common/enum/questionLevel.enum';
+import ListParagraphResponse from '@/modules/internals/paragraph/response/listParagraph.response';
 
 @Controller('paragraph')
 @ApiTags('Paragraph')
@@ -40,9 +43,19 @@ export class ParagraphController {
   @HttpCode(200)
   async getAllParagraphs(
     @GetUser() user: UserPayload,
-    @Body() data: ParagraphCreateDto,
-  ): Promise<ParagraphResponse> {
-    return await this.paragraphService.create(user.id, data);
-    // return await this.paragraphService.getAllParagraphs(user.id, data);
+    @Query('page') page: number = null,
+    @Query('perPage') perPage: number = null,
+    @Query('search') search: string = '',
+    @Query('topicId') topicId: number = null,
+    @Query('level') level: QuestionLevelEnum = null,
+  ): Promise<ListParagraphResponse> {
+    return await this.paragraphService.getAllParagraphs(
+      user.id,
+      page,
+      perPage,
+      search,
+      topicId,
+      level,
+    );
   }
 }
