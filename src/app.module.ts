@@ -23,6 +23,7 @@ import { VocabularyModule } from '@/modules/internals/vocabulary/vocabulary.modu
 import { redisStore } from 'cache-manager-redis-yet';
 import { GoogleSpeechModule } from './google-speech/google-speech.module';
 import { CollectionModule } from '@/modules/internals/collection/collection.module';
+import { ParagraphModule } from '@/modules/internals/paragraph/paragraph.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { CollectionModule } from '@/modules/internals/collection/collection.modu
     VocabularyModule,
     GoogleSpeechModule,
     CollectionModule,
+    ParagraphModule,
   ],
   controllers: [],
   providers: [OpenaiService],
