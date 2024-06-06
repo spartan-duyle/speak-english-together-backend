@@ -18,4 +18,9 @@ model User {
   vocabularies Vocabulary[]
   vocabulary_topics Collection[]
   paragraphs Paragraph[]
+  birthday DateTime?
+  native_language String?
+  interests String[]
+  learning_goals String[]
+  occupation String?
 }

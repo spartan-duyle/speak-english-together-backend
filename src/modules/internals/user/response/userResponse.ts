@@ -42,4 +42,24 @@ export default class UserResponse {
   @ApiProperty({ type: Number })
   @Expose()
   following_count: number;
+
+  @ApiProperty({ type: Date })
+  @Expose()
+  birthday: Date;
+
+  @ApiProperty({ type: String })
+  @Expose()
+  native_language: string;
+
+  @ApiProperty({ type: [String] })
+  @Expose()
+  interests: string[];
+
+  @ApiProperty({ type: [String] })
+  @Expose()
+  learning_goals: string;
+
+  @ApiProperty({ type: String })
+  @Expose()
+  occupation: string;
 }
