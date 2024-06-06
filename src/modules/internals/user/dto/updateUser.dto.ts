@@ -31,4 +31,24 @@ export class UpdateUserDto {
   @IsNotEmpty()
   @IsOptional()
   nationality: string;
+
+  @ApiProperty({ type: Date, required: false, nullable: true })
+  @IsOptional()
+  birthday?: Date;
+
+  @ApiProperty({ type: String, required: false, nullable: true })
+  @IsOptional()
+  native_language?: string;
+
+  @ApiProperty({ type: [String], required: false, nullable: true })
+  @IsOptional()
+  interests?: string[];
+
+  @ApiProperty({ type: [String], required: false, nullable: true })
+  @IsOptional()
+  learning_goals?: string[];
+
+  @ApiProperty({ type: String, required: false, nullable: true })
+  @IsOptional()
+  occupation?: string;
 }
