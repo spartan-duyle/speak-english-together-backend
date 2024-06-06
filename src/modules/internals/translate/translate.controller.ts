@@ -25,6 +25,7 @@ export class TranslateController {
     const result = await this.openaiService.translateText(
       translateDto.text,
       translateDto.to,
+      translateDto.from,
     );
 
     return {

@@ -59,6 +59,11 @@ export default class UserService {
       throw new NotFoundException(ErrorMessages.USER.USER_NOT_FOUND);
     }
 
+    if (data.birthday) {
+      data.birthday = new Date(data.birthday);
+      data.birthday.setUTCHours(0, 0, 0, 0);
+    }
+
     const updatedUser = await this.userRepository.updateProfile(
       id,
       data.full_name,
@@ -66,6 +71,11 @@ export default class UserService {
       data.avatar_url,
       data.level,
       data.nationality,
+      data.birthday,
+      data.native_language,
+      data.interests,
+      data.learning_goals,
+      data.occupation,
     );
 
     return plainToInstanceCustom(UserResponse, updatedUser);
