@@ -37,6 +37,11 @@ export default class UserRepository {
     avatarUrl: string,
     level: UserLevel,
     nationality: string,
+    birthday?: Date,
+    nativeLanguage?: string,
+    interests?: string[],
+    learningGoals?: string[],
+    occupation?: string,
   ) {
     return this.prismaService.user.update({
       where: { id },
@@ -47,6 +52,11 @@ export default class UserRepository {
         level: level,
         nationality: nationality,
         updated_at: new Date(),
+        birthday: birthday,
+        native_language: nativeLanguage,
+        interests: interests,
+        learning_goals: learningGoals,
+        occupation: occupation,
       },
     });
   }

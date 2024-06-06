@@ -33,23 +33,21 @@ export class OpenaiService {
       return cachedResult;
     }
 
+    console.log('phrase:', phrase);
+    console.log('targetLanguage:', targetLanguage);
+    console.log('sourceLanguage:', sourceLanguage);
+
+    if (!sourceLanguage) {
+      sourceLanguage = await this.detectLanguage(phrase);
+    }
+
     // Construct the prompt based on whether sourceLanguage is provided
-    const prompt = sourceLanguage
-      ? `Translate the following phrase from ${sourceLanguage} to ${targetLanguage} and provide 3 sentences in both ${sourceLanguage} and ${targetLanguage}. Explain its usage in context. The output should be in the following format: {
+    const prompt = `Translate the following phrase from ${sourceLanguage} to ${targetLanguage} and provide 3 sentences in both ${sourceLanguage} and ${targetLanguage}. Explain its usage in context. The output should be in the following format: {
       "meaning": "<translation of the phrase>",
       "examples": [
         {"text": "<sentence in ${sourceLanguage}>", "translation": "<translated sentence in ${targetLanguage}>"},
         {"text": "<sentence in ${sourceLanguage}>", "translation": "<translated sentence in ${targetLanguage}>"},
         {"text": "<sentence in ${sourceLanguage}>", "translation": "<translated sentence in ${targetLanguage}>"}
-      ],
-      "context": "<explanation of usage in context>"
-    }.\n\nPhrase: '${phrase}'`
-      : `Translate the following phrase to ${targetLanguage} and provide 3 sentences in the language of this text and ${targetLanguage}. Explain its usage in context. The output should be in the following format: {
-      "meaning": "<translation of the phrase>",
-      "examples": [
-        {"text": "<sentence in source language>", "translation": "<translated sentence in target language>"},
-        {"text": "<sentence in source language>", "translation": "<translated sentence in target language>"},
-        {"text": "<sentence in source language>", "translation": "<translated sentence in target language>"}
       ],
       "context": "<explanation of usage in context>"
     }.\n\nPhrase: '${phrase}'`;
@@ -90,7 +88,6 @@ export class OpenaiService {
         return notFoundResponse;
       }
     } catch (error) {
-      console.error('Error fetching translation:', error);
       throw new Error('Translation service is currently unavailable.');
     }
   }
@@ -197,4 +194,24 @@ export class OpenaiService {
       throw new Error('Text analysis service is currently unavailable.');
     }
   }
+
+  detectLanguage = async (phrase: string) => {
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are a language detector. Detect the language of the following phrase. Please answer in the format: "The language is: detected_language". If you cannot detect the language, write "I could not find an answer."',
+        },
+        { role: 'user', content: `Phrase: '${phrase}'` },
+      ],
+    });
+
+    // Assuming the response returns the detected language in the format: 'The language is: English'
+    const detectedLanguage = response.choices[0].message.content.match(
+      /The language is: (\w+)/,
+    )[1];
+    return detectedLanguage;
+  };
 }
