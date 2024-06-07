@@ -37,16 +37,22 @@ export class OpenaiService {
       sourceLanguage = await this.detectLanguage(phrase);
     }
 
-    // Construct the prompt based on whether sourceLanguage is provided
-    const prompt = `Translate the following phrase from ${sourceLanguage} to ${targetLanguage} and provide 3 sentences in both ${sourceLanguage} and ${targetLanguage}. Explain its usage in context. The output should be in the following format: {
-      "meaning": "<translation of the phrase>",
-      "examples": [
-        {"text": "<sentence in ${sourceLanguage}>", "translation": "<translated sentence in ${targetLanguage}>"},
-        {"text": "<sentence in ${sourceLanguage}>", "translation": "<translated sentence in ${targetLanguage}>"},
-        {"text": "<sentence in ${sourceLanguage}>", "translation": "<translated sentence in ${targetLanguage}>"}
-      ],
-      "context": "<explanation of usage in context>"
-    }.\n\nPhrase: '${phrase}'`;
+    const systemMessage = `You are a language translator. You will be provided with a sentence in ${sourceLanguage}, and your task is to translate it into ${targetLanguage} and provide 3 sentences in both ${targetLanguage} and ${sourceLanguage}.
+             Explain its usage in context in ${targetLanguage}. If the source language and target language are the same, please translate the sentence into either ${targetLanguage}`;
+
+    const userMessage = `The sentence is: '${phrase}'.
+     Please format the response as a JSON object with the following structure:
+     {
+       "status": "success" if the translation is successful, "not_found" otherwise,
+       "meaning": "Translation of the phrase",
+       "examples": [
+         {"text": "Sentence 1 in ${sourceLanguage}", "translation": "Translated sentence 1 in ${targetLanguage}"},
+         {"text": "Sentence 2 in ${sourceLanguage}", "translation": "Translated sentence 2 in ${targetLanguage}"},
+         {"text": "Sentence 3 in ${sourceLanguage}", "translation": "Translated sentence 3 in ${targetLanguage}"}
+        ],
+       "context": "Explanation of usage in context"
+      }
+      Only provide the meaning, examples and context if the status is "success".`;
 
     try {
       const response = await this.openai.chat.completions.create({
@@ -54,37 +60,22 @@ export class OpenaiService {
         messages: [
           {
             role: 'system',
-            content:
-              'You are a language translator. If you cannot translate the input text, write I could not find an answer.',
+            content: systemMessage,
           },
-          { role: 'user', content: prompt },
+          { role: 'user', content: userMessage },
         ],
+        response_format: { type: 'json_object' },
       });
 
       const output = response.choices[0].message.content.trim();
 
-      if (output === 'I could not find an answer.') {
-        // Cache and return 'not_found' status if the translation could not be found
-        const notFoundResponse = { status: 'not_found' };
-        await this.cacheService.set(cacheKey, notFoundResponse, 86400 * 1000);
-        return notFoundResponse;
-      }
-
       const jsonOutput = JSON.parse(output);
 
-      // Check if the response contains meaningful data
-      if (jsonOutput.meaning || jsonOutput.examples || jsonOutput.context) {
-        const successResponse = { ...jsonOutput, status: 'success' };
-        // Cache the successful translation result with a TTL of 30 days
-        await this.cacheService.set(cacheKey, successResponse, 86400 * 1000);
-        return successResponse;
-      } else {
-        const notFoundResponse = { status: 'not_found' };
-        await this.cacheService.set(cacheKey, notFoundResponse, 86400 * 1000);
-        return notFoundResponse;
-      }
+      await this.cacheService.set(cacheKey, jsonOutput, 86400 * 1000);
+      return jsonOutput;
     } catch (error) {
-      throw new Error('Translation service is currently unavailable.');
+      console.log('Error fetching translation:', error);
+      return { status: 'not_found', error: error.message };
     }
   }
 
@@ -132,68 +123,56 @@ export class OpenaiService {
 
       return { ...jsonOutput, status: 'success' };
     } catch (error) {
-      throw new Error('Question generation service is currently unavailable.');
+      console.log('Error fetching speaking question:', error);
+      return { status: 'failed', error: error.message };
     }
   }
 
   async analyzeText(user: UserPayload, data: AnalyzeTextDto) {
-    const question = data.question;
-    const text = data.text;
-    const prompt = `Analyze the following text: ${text}.
-  If a specific question is provided, focus the analysis on that topic: "${question}".
-  If the text does not match the question or is irrelevant, state that clearly.
-  If no question is provided, analyze the text generally.
-  The analysis should cover the following aspects:
-  - Overall comment on the text, highlighting key points or issues
-  - Updated text with corrections or suggestions (if the text is relevant or no question is provided)
-  - Suggestions for improving the text (if the text is relevant or no question is provided)
+    const { question, text } = data;
 
-  Use simple and accessible language. Provide the analysis in the following JSON structure:
-  {
-    "overall_comment": "General feedback on the text",
-    "updated_text": "Updated text with corrections or suggestions",
-    "translated_updated_text": "Translate the updated text to the user's language: ${user.nationality}",
-    "suggestions": [
-      "Suggestion 1 for improving the text",
-      "Suggestion 2 for improving the text",
-      "Suggestion 3 for improving the text",
-      ...
-    ],
-    "relevance_to_question": "Does the text ${text} match with the topic ${question}? Please answer with 'Yes' or 'No'. If no question is provided, write 'N/A'."
-  }`;
+    const systemMessage = `You are an English text analysis expert, focusing on grammar, writing, speaking, and vocabulary. 
+    You are here to help students improve their writing and speaking skills, and provide feedback on their texts. 
+    The provided text was transcribed from a student who is speaking in English. 
+    The format of this test is similar to the IELTS part 2 speaking test, but the topic is optional. In that case, just focus on the text provided by the user. 
+    You should provide feedback on the student’s speaking and suggest ways to improve.`;
+
+    const userMessage = `My text is: ${text}.
+    ${question ? `The topic is: ${question}.` : ''}
+    Please format the response as a JSON object with the following structure:
+    {
+        "status": "success" if the analysis is successful, "failed" otherwise,
+        "overall_comment": "General feedback on the text about grammar, vocabulary and give for user the error in the text.",
+        "updated_text": "Updated text with the user's errors fixed and enhancements.",
+        "translated_updated_text": Translate the updated text into ${user.native_language}."
+        "suggestions": [
+          "Suggestion 1 for improving the text",
+          "Suggestion 2 for improving the text",
+          ...
+        ],
+        "relevance_to_question": "Does the text '${text}' match the topic '${question}'? Please answer with 'Yes' or 'No'. If no question is provided, write 'N/A'."
+    };`;
 
     try {
-      // Make the request to the OpenAI API
       const response = await this.openai.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-4o',
         messages: [
-          {
-            role: 'system',
-            content:
-              'You are a text analysis expert. If you cannot analyze the text, write "I could not find an answer."',
-          },
-          { role: 'user', content: prompt },
+          { role: 'system', content: systemMessage },
+          { role: 'user', content: userMessage },
         ],
       });
 
       const output = response.choices[0].message.content.trim();
-
-      if (output === 'I could not find an answer.') {
-        return { status: 'failed' };
-      }
-
-      const jsonOutput = JSON.parse(output);
-
-      return { ...jsonOutput, status: 'success' };
+      return JSON.parse(output);
     } catch (error) {
-      console.log('Error fetching text analysis:', error);
-      throw new Error('Text analysis service is currently unavailable.');
+      console.error('Error fetching text analysis:', error);
+      return { status: 'failed', error: error.message };
     }
   }
 
   detectLanguage = async (phrase: string) => {
     const response = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-4o',
       messages: [
         {
           role: 'system',
@@ -205,10 +184,9 @@ export class OpenaiService {
     });
 
     // Assuming the response returns the detected language in the format: 'The language is: English'
-    const detectedLanguage = response.choices[0].message.content.match(
+    return response.choices[0].message.content.match(
       /The language is: (\w+)/,
     )[1];
-    return detectedLanguage;
   };
 
   async generateSentenceInRoom(
@@ -269,7 +247,7 @@ export class OpenaiService {
       ]}`;
 
     const response = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-4o',
       messages: [
         {
           role: 'system',
@@ -280,6 +258,7 @@ export class OpenaiService {
           content: userMessage,
         },
       ],
+      response_format: { type: 'json_object' },
     });
 
     const output = response.choices[0].message.content.trim();
