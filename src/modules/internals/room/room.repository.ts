@@ -14,6 +14,9 @@ export default class RoomRepository {
         deleted_at: null,
         ended_at: null,
       },
+      include: {
+        topic: true,
+      },
     });
   }
 
@@ -91,11 +94,7 @@ export default class RoomRepository {
             deleted_at: null,
           },
         },
-        topic: {
-          where: {
-            deleted_at: null,
-          },
-        },
+        topic: true,
       },
       take: perPage,
       skip: (page - 1) * perPage,
@@ -140,11 +139,7 @@ export default class RoomRepository {
             deleted_at: null,
           },
         },
-        topic: {
-          where: {
-            deleted_at: null,
-          },
-        },
+        topic: true,
       },
     });
   }

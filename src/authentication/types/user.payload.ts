@@ -5,4 +5,9 @@ export type UserPayload = {
   level: string;
   email: string;
   nationality: string;
+  birthday?: Date;
+  native_language?: string;
+  interests?: string[];
+  learning_goals?: string[];
+  occupation?: string;
 };

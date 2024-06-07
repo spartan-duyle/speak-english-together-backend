@@ -33,10 +33,6 @@ export class OpenaiService {
       return cachedResult;
     }
 
-    console.log('phrase:', phrase);
-    console.log('targetLanguage:', targetLanguage);
-    console.log('sourceLanguage:', sourceLanguage);
-
     if (!sourceLanguage) {
       sourceLanguage = await this.detectLanguage(phrase);
     }
@@ -70,7 +66,7 @@ export class OpenaiService {
       if (output === 'I could not find an answer.') {
         // Cache and return 'not_found' status if the translation could not be found
         const notFoundResponse = { status: 'not_found' };
-        await this.cacheService.set(cacheKey, notFoundResponse, 86400 * 30);
+        await this.cacheService.set(cacheKey, notFoundResponse, 86400 * 1000);
         return notFoundResponse;
       }
 
@@ -80,11 +76,11 @@ export class OpenaiService {
       if (jsonOutput.meaning || jsonOutput.examples || jsonOutput.context) {
         const successResponse = { ...jsonOutput, status: 'success' };
         // Cache the successful translation result with a TTL of 30 days
-        await this.cacheService.set(cacheKey, successResponse, 86400 * 30);
+        await this.cacheService.set(cacheKey, successResponse, 86400 * 1000);
         return successResponse;
       } else {
         const notFoundResponse = { status: 'not_found' };
-        await this.cacheService.set(cacheKey, notFoundResponse, 86400 * 30);
+        await this.cacheService.set(cacheKey, notFoundResponse, 86400 * 1000);
         return notFoundResponse;
       }
     } catch (error) {
@@ -214,4 +210,96 @@ export class OpenaiService {
     )[1];
     return detectedLanguage;
   };
+
+  async generateSentenceInRoom(
+    user: UserPayload,
+    topic: string,
+    refresh: boolean,
+  ) {
+    const cacheKey = `sentences:${user.id}:${topic}`;
+
+    let cachedSentences = await this.cacheService.get(cacheKey);
+
+    console.log('cachedSentences:', cachedSentences);
+    if (!refresh && cachedSentences) {
+      return cachedSentences;
+    }
+
+    const parts = Array.of(
+      'You are an English communication teacher, focusing on daily life conversation.',
+      "You are in the live room where students talk in English with their buddies. You are here to support them in speaking more confidently and professionally. You should use the student's information to help them practice according to their own personal needs.",
+      `The student's name is ${user.full_name}.`,
+      user.nationality
+        ? `The student is from ${user.nationality}.`
+        : 'The student is from an unknown country.',
+      user.native_language
+        ? `The student's native language is ${user.native_language}.`
+        : 'The student has not provided their native language.',
+      user.occupation
+        ? `The student works as a ${user.occupation}.`
+        : 'The student has not provided their occupation.',
+      user.interests
+        ? `The student is interested in ${user.interests.join(', ')}.`
+        : 'The student has not provided their interests.',
+      user.learning_goals
+        ? `The student's English learning goals include ${user.learning_goals.join(', ')}.`
+        : 'The student has not provided their learning goals.',
+      user.birthday
+        ? `The student is ${new Date().getFullYear() - new Date(user.birthday).getFullYear()} years old.`
+        : 'The student has not provided their birthday.',
+      `The student is at the ${user.level} level in English proficiency.`,
+    );
+
+    const systemMessage = parts.join('\n\n');
+
+    const oldSentences =
+      cachedSentences?.data
+        .map((s: { english: any }) => s.english)
+        .join('\n') || '';
+
+    const userMessage = `Please help me generate 10 new sentences in the room about the topic of ${topic}. Ensure that the sentences are clear, concise, easy to understand, and can be used in daily conversation, relevant to my information. 
+    ${user.native_language ? `Translate the sentences into ${user.native_language} as well.` : ''}
+    ${oldSentences ? `The previous sentences is: ${oldSentences}. Please avoid repeating them, and the new sentences must be different from this previous sentences` : ''}
+    Please format the response as a JSON object with the following structure: {
+      "data": [
+      {
+      "english": "Sentence 1 in English",
+      "translated": "${user.native_language ? 'Translated sentence 1' : ''}"
+      },
+      ]}`;
+
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        {
+          role: 'system',
+          content: systemMessage,
+        },
+        {
+          role: 'user',
+          content: userMessage,
+        },
+      ],
+    });
+
+    const output = response.choices[0].message.content.trim();
+
+    const newSentences = JSON.parse(output);
+
+    if (!newSentences.data || newSentences.data.length === 0) {
+      return oldSentences;
+    }
+
+    // Append new sentences to cached sentences if they exist
+    if (cachedSentences && cachedSentences.data) {
+      cachedSentences.data = cachedSentences.data.concat(newSentences.data);
+    } else {
+      cachedSentences = newSentences;
+    }
+
+    // Cache the result
+    await this.cacheService.set(cacheKey, cachedSentences, 7200 * 1000);
+
+    return cachedSentences;
+  }
 }

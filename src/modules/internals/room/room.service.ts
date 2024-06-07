@@ -23,6 +23,7 @@ import { TopicService } from '@/modules/internals/topic/topic.service';
 import { TopicDto } from '@/modules/internals/topic/dto/topic.dto';
 import { PrismaService } from '@/database/prisma/prisma.serivce';
 import LeaveRoomDto from '@/modules/internals/room/dto/leaveRoom.dto';
+import { OpenaiService } from '@/modules/internals/openai/openai.service';
 
 @Injectable()
 export class RoomService {
@@ -33,6 +34,7 @@ export class RoomService {
     private readonly roomRepository: RoomRepository,
     private readonly topicService: TopicService,
     private readonly prisma: PrismaService,
+    private readonly openaiService: OpenaiService,
   ) {}
 
   async generateVideoSDKToken(): Promise<VideoSDKTokenResponse> {
@@ -290,5 +292,18 @@ export class RoomService {
       return plainToInstanceCustom(RoomMemberDto, member);
     });
     return roomResponse;
+  }
+
+  async generateSpeakingSentence(user: UserPayload, roomId: number, refresh: boolean) {
+    const room = await this.roomRepository.byId(roomId);
+    if (!room) {
+      throw new NotFoundException(ErrorMessages.ROOM.NOT_FOUND);
+    }
+
+    return await this.openaiService.generateSentenceInRoom(
+      user,
+      room.topic.name,
+      refresh,
+    );
   }
 }

@@ -44,6 +44,8 @@ export default class UserService {
     const countFollowing = await this.followerRepository.countFollowing(id);
 
     const result = plainToInstanceCustom(UserResponse, user);
+    console.log('test');
+    console.log('result', result);
     result.count_followers = countFollowers;
     result.count_following = countFollowing;
     return result;
