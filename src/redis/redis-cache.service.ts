@@ -24,6 +24,7 @@ export class RedisCacheService implements OnModuleInit {
 
   async get(key: string): Promise<any> {
     try {
+      console.log('Cache get:', key);
       return await this.cacheManager.get(key);
     } catch (error) {
       console.error('Cache get error:', error);

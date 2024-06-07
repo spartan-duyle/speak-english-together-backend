@@ -197,4 +197,15 @@ export class RoomController {
   async getRoomDetails(@Param('id') id: number): Promise<RoomResponse> {
     return await this.roomService.getRoomDetails(id);
   }
+
+  @Get(':id/get-speaking-sentence')
+  @UseGuards(UserGuard, VerifyGuard)
+  async generateSpeakingSentence(
+    @GetUser() user: UserPayload,
+    @Param('id') roomId: number,
+    @Query('refresh') refresh: boolean = false,
+  ) {
+    console.log('userPayload: ', user);
+    return await this.roomService.generateSpeakingSentence(user, roomId, refresh);
+  }
 }

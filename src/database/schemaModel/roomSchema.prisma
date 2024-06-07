@@ -2,8 +2,8 @@ model Room {
   id                    Int      @id @default(autoincrement())
   name                  String   
   host_user_id          Int
-  topic                 Topic?        @relation(fields: [topic_id], references: [id])
-  topic_id              Int?
+  topic                 Topic        @relation(fields: [topic_id], references: [id])
+  topic_id              Int
   is_private            Boolean      @default(false)
   password              String?
   description           String?
