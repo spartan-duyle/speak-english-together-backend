@@ -24,4 +24,7 @@ export default class AnalyzeTextResponse {
     description: 'Is the text relevance to question',
   })
   relevant_to_question?: string;
+
+  @ApiProperty({ type: String, description: 'The error' })
+  error?: string;
 }
