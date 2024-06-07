@@ -151,7 +151,7 @@ export class OpenaiService {
           ...
         ],
         "relevance_to_question": "Does the text '${text}' match the topic '${question}'? Please answer with 'Yes' or 'No'. If no question is provided, write 'N/A'."
-    };`;
+    }`;
 
     try {
       const response = await this.openai.chat.completions.create({
@@ -160,6 +160,7 @@ export class OpenaiService {
           { role: 'system', content: systemMessage },
           { role: 'user', content: userMessage },
         ],
+        response_format: { type: 'json_object' },
       });
 
       const output = response.choices[0].message.content.trim();
@@ -240,10 +241,10 @@ export class OpenaiService {
     ${oldSentences ? `The previous sentences is: ${oldSentences}. Please avoid repeating them, and the new sentences must be different from this previous sentences` : ''}
     Please format the response as a JSON object with the following structure: {
       "data": [
-      {
-      "english": "Sentence 1 in English",
-      "translated": "${user.native_language ? 'Translated sentence 1' : ''}"
-      },
+        {
+        "english": "Sentence 1 in English",
+        "translated": "${user.native_language ? 'Translated sentence 1' : ''}"
+        },
       ]}`;
 
     const response = await this.openai.chat.completions.create({
