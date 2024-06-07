@@ -63,7 +63,7 @@ export class GoogleSpeechService {
         .publicUrl;
 
       // Cache the audio URL for 1 day
-      await this.cacheService.set(cacheKey, audioUrl, 86400); // Cache for 1 day
+      await this.cacheService.set(cacheKey, audioUrl, 86400 * 1000); // Cache for 1 day
 
       return audioUrl;
     } catch (error) {
