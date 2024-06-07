@@ -9,4 +9,7 @@ export class GenerateSpeakingQuestionResponse {
 
   @ApiProperty({ type: [String] })
   suggestions?: string[];
+
+  @ApiProperty({ type: String })
+  error?: string;
 }

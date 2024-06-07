@@ -6,9 +6,7 @@ import { GetUser } from '@/common/decorators/get-user.decorator';
 import { UserPayload } from '@/authentication/types/user.payload';
 import GenerateSpeakingQuestionDto from '@/modules/internals/openai/dto/generateSpeakingQuestion.dto';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
-import {
-  GenerateSpeakingQuestionResponse
-} from '@/modules/internals/openai/response/generateSpeakingQuestion.response';
+import { GenerateSpeakingQuestionResponse } from '@/modules/internals/openai/response/generateSpeakingQuestion.response';
 import AnalyzeTextDto from '@/modules/internals/openai/dto/analyzeText.dto';
 import AnalyzeTextResponse from '@/modules/internals/openai/response/analyzeText.response';
 
@@ -30,6 +28,7 @@ export class OpenAiController {
       status: result.status,
       question: result.question || null,
       suggestions: result.suggestions || null,
+      error: result.error || null,
     };
   }
 
@@ -49,6 +48,7 @@ export class OpenAiController {
       translated_updated_text: result.translated_updated_text || null,
       suggestions: result.suggestions || null,
       relevant_to_question: result.relevance_to_question || null,
+      error: result.error || null,
     };
   }
 }
