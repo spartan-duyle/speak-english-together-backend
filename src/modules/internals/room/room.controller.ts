@@ -206,6 +206,10 @@ export class RoomController {
     @Query('refresh') refresh: boolean = false,
   ) {
     console.log('userPayload: ', user);
-    return await this.roomService.generateSpeakingSentence(user, roomId, refresh);
+    return await this.roomService.generateSpeakingSentence(
+      user,
+      roomId,
+      refresh,
+    );
   }
 }
