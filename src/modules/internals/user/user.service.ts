@@ -13,6 +13,7 @@ import { ErrorMessages } from '@/common/exceptions/errorMessage.exception';
 import ListUserResponse from '@/modules/internals/user/response/listUser.response';
 import UserResponse from '@/modules/internals/user/response/userResponse';
 import FollowerRepository from '@/modules/internals/follower/follower.repository';
+import RegisterDto from '@/authentication/dto/register.dto';
 
 @Injectable()
 export default class UserService {
@@ -114,7 +115,7 @@ export default class UserService {
     await this.userRepository.updatePassword(id, hashedPassword);
   }
 
-  async create(data: any) {
+  async create(data: RegisterDto) {
     return await this.userRepository.create(data);
   }
 
