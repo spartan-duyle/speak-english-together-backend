@@ -118,8 +118,8 @@ export class FollowerService {
     const { data, total } = await this.followerRepository.getFollowers(
       userId,
       search,
-      page | 1,
-      perPage | 10,
+      page || 1,
+      perPage || 10,
     );
 
     const followingOfCurrentUser =
@@ -156,8 +156,8 @@ export class FollowerService {
     const { data, total } = await this.followerRepository.getFollowing(
       userId,
       search,
-      page | 1,
-      perPage | 10,
+      page || 1,
+      perPage || 10,
     );
 
     const followingOfCurrentUser =
