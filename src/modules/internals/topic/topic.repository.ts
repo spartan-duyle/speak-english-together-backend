@@ -40,6 +40,7 @@ export class TopicRepository {
       data: {
         name: data.name,
         image: data.image,
+        content: data.content,
       },
     });
   }
