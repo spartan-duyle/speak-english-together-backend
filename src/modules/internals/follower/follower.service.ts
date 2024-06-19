@@ -137,6 +137,7 @@ export class FollowerService {
         is_following: isFollowing,
         nationality: item.follower.nationality,
         level: item.follower.level,
+        comet_chat_uid: item.follower.comet_chat_uid,
       };
     });
 
@@ -175,6 +176,7 @@ export class FollowerService {
         is_following: isFollowing,
         nationality: item.followed.nationality,
         level: item.followed.level,
+        comet_chat_uid: item.followed.comet_chat_uid,
       };
     });
 
