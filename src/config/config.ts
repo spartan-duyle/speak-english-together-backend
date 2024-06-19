@@ -45,4 +45,9 @@ export default () => ({
   openai: {
     apiKey: process.env.OPENAI_API_KEY,
   },
+
+  cometChat: {
+    appId: process.env.COMETCHAT_APP_ID,
+    apiKey: process.env.COMETCHAT_API_KEY,
+  },
 });

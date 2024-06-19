@@ -24,6 +24,7 @@ import { redisStore } from 'cache-manager-redis-yet';
 import { GoogleSpeechModule } from './google-speech/google-speech.module';
 import { CollectionModule } from '@/modules/internals/collection/collection.module';
 import { ParagraphModule } from '@/modules/internals/paragraph/paragraph.module';
+import { CometchatModule } from '@/modules/externals/cometchat/cometchat.module';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { ParagraphModule } from '@/modules/internals/paragraph/paragraph.module'
     GoogleSpeechModule,
     CollectionModule,
     ParagraphModule,
+    CometchatModule,
   ],
   controllers: [],
   providers: [OpenaiService],

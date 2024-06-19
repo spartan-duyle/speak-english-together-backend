@@ -56,4 +56,6 @@ export class UserModel {
   @Expose()
   @ApiProperty({ type: Date })
   deleted_at: Date;
+
+  comet_chat_uid?: string;
 }
