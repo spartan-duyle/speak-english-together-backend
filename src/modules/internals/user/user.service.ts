@@ -186,4 +186,12 @@ export default class UserService {
     );
     return result;
   }
+
+  async migrateCometChatUid() {
+    const users = await this.userRepository.getAll();
+
+    users.map(
+      (user) => this.co
+    )
+  }
 }

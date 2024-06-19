@@ -148,4 +148,12 @@ export default class UserRepository {
       },
     });
   }
+
+  async getAll() {
+    return this.prismaService.user.findMany({
+      where: {
+        deleted_at: null,
+      },
+    });
+  }
 }

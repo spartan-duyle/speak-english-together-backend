@@ -120,4 +120,11 @@ export class UserController {
   ): Promise<UserResponse> {
     return await this.userService.userDetail(user.id, id);
   }
+
+  @Post('migrate-comet-chat-uid')
+  @UseGuards(UserGuard, VerifyGuard)
+  @ApiBearerAuth()
+  async migrateCometChatUid(): Promise<void> {
+    return await this.userService.migrateCometChatUid();
+  }
 }
