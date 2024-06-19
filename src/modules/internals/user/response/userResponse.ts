@@ -62,4 +62,8 @@ export default class UserResponse {
   @ApiProperty({ type: String })
   @Expose()
   occupation: string;
+
+  @ApiProperty({ type: Date })
+  @Expose()
+  comet_chat_uid?: string;
 }

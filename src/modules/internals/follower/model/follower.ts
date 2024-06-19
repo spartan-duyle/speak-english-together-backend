@@ -29,4 +29,7 @@ export class Follower {
   @ApiProperty({ type: Boolean })
   @Expose()
   is_following: boolean;
+
+  @ApiProperty({ type: String })
+  comet_chat_uid?: string;
 }

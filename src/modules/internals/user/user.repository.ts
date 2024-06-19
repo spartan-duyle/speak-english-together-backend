@@ -71,11 +71,12 @@ export default class UserRepository {
     });
   }
 
-  async create(data: any) {
+  async create(data: any, cometChatUid: string) {
     return this.prismaService.user.create({
       data: {
         ...data,
         email: data.email.toLowerCase(),
+        comet_chat_uid: cometChatUid,
       },
     });
   }
@@ -137,5 +138,14 @@ export default class UserRepository {
       data,
       total,
     };
+  }
+
+  async updateCometChatUid(id: number, cometChatUid: string) {
+    return this.prismaService.user.update({
+      where: { id },
+      data: {
+        comet_chat_uid: cometChatUid,
+      },
+    });
   }
 }

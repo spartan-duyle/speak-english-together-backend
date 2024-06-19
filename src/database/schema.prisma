@@ -117,6 +117,7 @@ model Topic {
   interests String[]
   learning_goals String[]
   occupation String?
+  comet_chat_uid String?
 }
 model Vocabulary {
   id                  Int      @id @default(autoincrement())

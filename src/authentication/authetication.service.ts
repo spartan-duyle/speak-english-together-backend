@@ -1,7 +1,11 @@
 import * as bcrypt from 'bcrypt';
 import RegisterDto from './dto/register.dto';
 import { UserStatus } from '@/common/enum/userStatus.enum';
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { pick } from 'lodash';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -11,6 +15,7 @@ import UserService from '@/modules/internals/user/user.service';
 import { UserModel } from '@/modules/internals/user/model/user.model';
 import { ErrorMessages } from '@/common/exceptions/errorMessage.exception';
 import UserRepository from '@/modules/internals/user/user.repository';
+import CometchatService from '@/modules/externals/cometchat/cometchat.service';
 
 @Injectable()
 export default class AuthenticationService {
@@ -19,6 +24,7 @@ export default class AuthenticationService {
     private config: ConfigService,
     private readonly userService: UserService,
     private readonly userRepo: UserRepository,
+    private readonly cometchatService: CometchatService,
   ) {}
 
   private readonly jwtSecret = this.config.get('auth.jwtSecret');
@@ -40,8 +46,18 @@ export default class AuthenticationService {
       registrationData.password,
       10,
     );
-    const createdUser = await this.userService.create(registrationData);
+
+    const cometChatUser = await this.cometchatService.createUser(
+      Date.now().toString(),
+      registrationData.full_name,
+    );
+
+    const createdUser = await this.userService.create(
+      registrationData,
+      cometChatUser.data.uid,
+    );
     createdUser.password = undefined;
+
     return createdUser;
   }
 
@@ -60,6 +76,16 @@ export default class AuthenticationService {
       throw new ForbiddenException(ErrorMessages.AUTH.USER_INACTIVE);
 
     await this.verifyPassword(dto.password, user.password);
+
+    if (!user.comet_chat_uid) {
+      const cometChatUser = await this.cometchatService.createUser(
+        Date.now().toString(),
+        user.full_name,
+        user.avatar_url,
+      );
+
+      await this.userRepo.updateCometChatUid(user.id, cometChatUser.data.uid);
+    }
 
     return this.signToken(user);
   }

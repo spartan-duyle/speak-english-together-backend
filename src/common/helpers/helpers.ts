@@ -7,3 +7,7 @@ export function plainToInstanceCustom(model: any, response: any): any {
     strategy: 'excludeAll',
   });
 }
+
+export function removeSpaces(input: string): string {
+  return input.replace(/\s+/g, '');
+}
