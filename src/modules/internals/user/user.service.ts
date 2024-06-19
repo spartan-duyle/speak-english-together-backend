@@ -45,8 +45,6 @@ export default class UserService {
     const countFollowing = await this.followerRepository.countFollowing(id);
 
     const result = plainToInstanceCustom(UserResponse, user);
-    console.log('test');
-    console.log('result', result);
     result.count_followers = countFollowers;
     result.count_following = countFollowing;
     return result;
@@ -80,6 +78,7 @@ export default class UserService {
       data.learning_goals,
       data.occupation,
     );
+
 
     return plainToInstanceCustom(UserResponse, updatedUser);
   }
@@ -115,8 +114,8 @@ export default class UserService {
     await this.userRepository.updatePassword(id, hashedPassword);
   }
 
-  async create(data: RegisterDto) {
-    return await this.userRepository.create(data);
+  async create(data: RegisterDto, cometChatId: string) {
+    return await this.userRepository.create(data, cometChatId);
   }
 
   async listUsers(

@@ -8,6 +8,7 @@ import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PrismaModule } from 'src/database/prisma/prisma.module';
 import { MailModule } from 'src/shared/mail/mail.module';
+import { CometchatModule } from '@/modules/externals/cometchat/cometchat.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { MailModule } from 'src/shared/mail/mail.module';
       }),
     }),
     MailModule,
+    CometchatModule,
   ],
   controllers: [AuthenticationController],
   providers: [AuthenticationService, UserStrategy],
