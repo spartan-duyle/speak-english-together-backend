@@ -34,8 +34,11 @@ export default class CometchatService {
           }),
         };
 
-    const response = await fetch(this.url, options);
-
-    return await response.json();
+    try {
+      const response = await fetch(this.url, options);
+      return await response.json();
+    } catch (error) {
+      console.error(error);
+    }
   }
 }

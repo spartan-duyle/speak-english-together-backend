@@ -14,12 +14,14 @@ import ListUserResponse from '@/modules/internals/user/response/listUser.respons
 import UserResponse from '@/modules/internals/user/response/userResponse';
 import FollowerRepository from '@/modules/internals/follower/follower.repository';
 import RegisterDto from '@/authentication/dto/register.dto';
+import CometchatService from '@/modules/externals/cometchat/cometchat.service';
 
 @Injectable()
 export default class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly followerRepository: FollowerRepository,
+    private readonly cometChatService: CometchatService,
   ) {}
 
   async getByEmail(email: string): Promise<UserModel> {
@@ -78,7 +80,6 @@ export default class UserService {
       data.learning_goals,
       data.occupation,
     );
-
 
     return plainToInstanceCustom(UserResponse, updatedUser);
   }
@@ -190,8 +191,22 @@ export default class UserService {
   async migrateCometChatUid() {
     const users = await this.userRepository.getAll();
 
-    users.map(
-      (user) => this.co
-    )
+    for (const user of users) {
+      if (!user.comet_chat_uid) {
+        const cometChat = await this.cometChatService.createUser(
+          Date.now().toString(),
+          user.full_name,
+          user.avatar_url,
+        );
+
+        await this.userRepository.updateCometChatUid(
+          user.id,
+          cometChat.data.uid,
+        );
+
+        // Wait for 10 seconds after each user
+        await new Promise((resolve) => setTimeout(resolve, 10000));
+      }
+    }
   }
 }
