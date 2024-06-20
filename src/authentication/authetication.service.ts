@@ -141,7 +141,7 @@ export default class AuthenticationService {
 
   async signToken(
     user: UserModel,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  ): Promise<{ accessToken: string; refreshToken: string; user: UserModel }> {
     const pickedFields: string[] = [
       'id',
       'email',
@@ -162,9 +162,12 @@ export default class AuthenticationService {
       secret: this.jwtSecret,
     });
 
+    user.password = undefined;
+
     return {
       accessToken: accessToken,
       refreshToken: refreshToken,
+      user: user,
     };
   }
 }
