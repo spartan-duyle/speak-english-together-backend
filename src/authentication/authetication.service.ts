@@ -77,16 +77,6 @@ export default class AuthenticationService {
 
     await this.verifyPassword(dto.password, user.password);
 
-    if (!user.comet_chat_uid) {
-      const cometChatUser = await this.cometchatService.createUser(
-        Date.now().toString(),
-        user.full_name,
-        user.avatar_url,
-      );
-
-      await this.userRepo.updateCometChatUid(user.id, cometChatUser.data.uid);
-    }
-
     return this.signToken(user);
   }
 
