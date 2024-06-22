@@ -1,5 +1,5 @@
 export class AddFirestoreRoomMemberDto {
-  roomId: number;
+  roomId: string;
   fullName: string;
   avatarUrl: string;
   userId: number;
