@@ -31,7 +31,7 @@ export default class RoomMemberRepository {
   async removeRoomMember(id: number) {
     return this.prismaService.roomMember.update({
       where: { id },
-      data: { deleted_at: new Date(), updated_at: new Date() },
+      data: { deleted_at: new Date(), updated_at: new Date(), is_host: false },
     });
   }
 
@@ -54,6 +54,27 @@ export default class RoomMemberRepository {
       data: {
         deleted_at: new Date(),
         updated_at: new Date(),
+      },
+    });
+  }
+
+  async updateToNewHostMemberInRoom(roomId: any) {
+    const roomMember = await this.findFirstMemberInRoom(roomId);
+
+    return this.prismaService.roomMember.update({
+      where: { id: roomMember.id },
+      data: {
+        is_host: true,
+        updated_at: new Date(),
+      },
+    });
+  }
+
+  async findFirstMemberInRoom(roomId: number) {
+    return this.prismaService.roomMember.findFirst({
+      where: {
+        room_id: roomId,
+        deleted_at: null,
       },
     });
   }

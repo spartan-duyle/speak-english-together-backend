@@ -143,4 +143,19 @@ export default class RoomRepository {
       },
     });
   }
+
+  async updateCurrentMemberAmountAndHostUser(
+    id: number,
+    currentMemberAmount: number,
+    hostUserId: number,
+  ) {
+    return this.prismaService.room.update({
+      where: { id },
+      data: {
+        current_member_amount: currentMemberAmount,
+        host_user_id: hostUserId,
+        updated_at: new Date(),
+      },
+    });
+  }
 }

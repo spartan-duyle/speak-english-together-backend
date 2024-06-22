@@ -22,7 +22,15 @@ export class RoomMemberService {
     return await this.roomMemberRepository.isUserJoiningAnotherRoom(userId);
   }
 
-  async removeManyMember(roomId: any) {
+  async removeManyMember(roomId: number) {
     return this.roomMemberRepository.batchDelete(roomId);
+  }
+
+  async updateToNewHostMemberInRoom(roomId: number) {
+    return await this.roomMemberRepository.updateToNewHostMemberInRoom(roomId);
+  }
+
+  async findFirstMemberInRoom(roomId: number) {
+    return await this.roomMemberRepository.findFirstMemberInRoom(roomId);
   }
 }
