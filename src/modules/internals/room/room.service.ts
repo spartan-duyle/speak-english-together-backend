@@ -10,7 +10,7 @@ import VideoSDKTokenResponse from './response/videoSDKToken.response';
 import { plainToInstanceCustom } from '@/common/helpers/helpers';
 import CreateRoomResponse from './response/createRoom.response';
 import { RoomMemberService } from '../roomMember/roomMember.service';
-import { FirestoreRoomMemberService } from '../../externals/firebase/firestoreRoomMember.service';
+import { FirestoreService } from '../../externals/firebase/firestore.service';
 import { AddFirestoreRoomMemberDto } from '../../externals/firebase/dto/addFirestoreRoomMember.dto';
 import { RoomResponse } from './response/room.response';
 import { RoomMemberDto } from '../roomMember/dto/roomMember.dto';
@@ -24,12 +24,13 @@ import { TopicDto } from '@/modules/internals/topic/dto/topic.dto';
 import { PrismaService } from '@/database/prisma/prisma.serivce';
 import LeaveRoomDto from '@/modules/internals/room/dto/leaveRoom.dto';
 import { OpenaiService } from '@/modules/internals/openai/openai.service';
+import { AddFirestoreRoomDto } from '@/modules/externals/firebase/dto/addFirestoreRoom.dto';
 
 @Injectable()
 export class RoomService {
   constructor(
     private readonly roomMemberService: RoomMemberService,
-    private readonly firestoreRoomMemberService: FirestoreRoomMemberService,
+    private readonly firestoreService: FirestoreService,
     private readonly videoSDKService: VideoSDKService,
     private readonly roomRepository: RoomRepository,
     private readonly topicService: TopicService,
@@ -63,8 +64,6 @@ export class RoomService {
           data.videoSDKToken,
         );
 
-        console.log(videoSDKRoomId);
-
         const isUserJoiningAnotherRoom =
           await this.roomMemberService.isUserJoiningAnotherRoom(user.id);
 
@@ -78,15 +77,22 @@ export class RoomService {
           videoSDKRoomId,
         );
 
+        const addRoomData: AddFirestoreRoomDto = {
+          roomId: room.id.toString(),
+          name: data.name,
+        };
+
         const addFirestoreRoomMemberData: AddFirestoreRoomMemberDto = {
-          roomId: room.id,
+          roomId: room.id.toString(),
           fullName: user.full_name,
           avatarUrl: user.avatar_url,
           userId: user.id,
           isHost: true,
         };
 
-        await this.firestoreRoomMemberService.addFirestoreRoomMember(
+        await this.firestoreService.addFirestoreRoom(addRoomData);
+
+        await this.firestoreService.addFirestoreRoomMember(
           addFirestoreRoomMemberData,
         );
 
@@ -190,9 +196,11 @@ export class RoomService {
           throw new BadRequestException(ErrorMessages.ROOM.CAN_NOT_JOIN_ROOM);
         }
 
+        const newMemberAmount = existingActiveRoom.current_member_amount + 1;
+
         await this.roomRepository.updateCurrentMemberAmount(
           existingActiveRoom.id,
-          existingActiveRoom.current_member_amount + 1,
+          newMemberAmount,
         );
 
         await this.roomMemberService.addRoomMember({
@@ -204,8 +212,13 @@ export class RoomService {
           isMuted: false,
         });
 
+        await this.firestoreService.updateCurrentMemberAmountInRoom(
+          existingActiveRoom.id.toString(),
+          newMemberAmount,
+        );
+
         const addFirestoreRoomMemberData: AddFirestoreRoomMemberDto = {
-          roomId: existingActiveRoom.id,
+          roomId: existingActiveRoom.id.toString(),
           fullName: user.full_name,
           avatarUrl: user.avatar_url,
           userId: user.id,
@@ -213,7 +226,7 @@ export class RoomService {
         };
 
         // sync room members to firestore
-        await this.firestoreRoomMemberService.addFirestoreRoomMember(
+        await this.firestoreService.addFirestoreRoomMember(
           addFirestoreRoomMemberData,
         );
       });
@@ -244,8 +257,11 @@ export class RoomService {
           // if the user is the host, then the room should be ended
           await this.roomMemberService.removeManyMember(existingActiveRoom.id);
           await this.roomRepository.endRoom(existingActiveRoom.id);
-          await this.firestoreRoomMemberService.deleteFirestoreRoomMemberForHost(
-            existingActiveRoom.id,
+          await this.firestoreService.deleteFireStoreRoom(
+            existingActiveRoom.id.toString(),
+          );
+          await this.firestoreService.deleteFirestoreRoomMemberForHost(
+            existingActiveRoom.id.toString(),
           );
 
           // deactivate video sdk room
@@ -270,8 +286,8 @@ export class RoomService {
             existingActiveRoom.current_member_amount - 1,
           );
 
-          await this.firestoreRoomMemberService.deleteFirestoreRoomMember(
-            existingActiveRoom.id,
+          await this.firestoreService.deleteFirestoreRoomMember(
+            existingActiveRoom.id.toString(),
             user.id,
           );
         }
@@ -294,7 +310,11 @@ export class RoomService {
     return roomResponse;
   }
 
-  async generateSpeakingSentence(user: UserPayload, roomId: number, refresh: boolean) {
+  async generateSpeakingSentence(
+    user: UserPayload,
+    roomId: number,
+    refresh: boolean,
+  ) {
     const room = await this.roomRepository.byId(roomId);
     if (!room) {
       throw new NotFoundException(ErrorMessages.ROOM.NOT_FOUND);
