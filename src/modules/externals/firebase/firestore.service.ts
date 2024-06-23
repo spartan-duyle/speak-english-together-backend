@@ -13,9 +13,13 @@ export class FirestoreService {
 
   private roomCollection = this.firestore.collection('rooms');
 
-  async addFirestoreRoomMember(data: AddFirestoreRoomMemberDto): Promise<void> {
+  async addFirestoreRoomMember(
+    roomMemberId: string,
+    data: AddFirestoreRoomMemberDto,
+  ): Promise<void> {
     try {
-      await this.roomMembersCollection.add({
+      await this.roomMembersCollection.doc(roomMemberId).set({
+        id: roomMemberId,
         room_id: data.roomId,
         full_name: data.fullName,
         avatar_url: data.avatarUrl,
@@ -103,6 +107,16 @@ export class FirestoreService {
       await this.roomCollection.doc(roomId).delete();
     } catch (err) {
       throw new Error(`Failed to delete firestore room: ${err.message}`);
+    }
+  }
+
+  async updateRoomMemberToHost(roomMemberId: string) {
+    try {
+      await this.roomMembersCollection.doc(roomMemberId).update({
+        is_host: true,
+      });
+    } catch (err) {
+      throw new Error(`Failed to update room member to hosy: ${err.message}`);
     }
   }
 }
