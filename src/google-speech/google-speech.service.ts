@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { TextToSpeechClient } from '@google-cloud/text-to-speech';
 import { RedisCacheService } from '@/redis/redis-cache.service';
 import { FileService } from '@/modules/internals/file/file.service';
@@ -88,10 +92,10 @@ export class GoogleSpeechService {
           },
           config: {
             encoding:
-              protos.google.cloud.speech.v1.RecognitionConfig.AudioEncoding
-                .MP3,
+              protos.google.cloud.speech.v1.RecognitionConfig.AudioEncoding.MP3,
             sampleRateHertz: 16000,
             languageCode: 'en-US',
+            alternativeLanguageCodes: ['vi-VN', 'ja-JP', 'ru-RU'],
           },
         };
 
