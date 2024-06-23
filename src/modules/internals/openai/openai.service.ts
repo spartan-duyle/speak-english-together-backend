@@ -136,7 +136,7 @@ export class OpenaiService {
   The provided text was transcribed from a student who is speaking in English. 
   The format of this test is similar to the IELTS part 2 speaking test, but the topic is optional. In that case, just focus on the text provided by the user. 
   You should provide feedback on the student’s speaking and suggest ways to improve.
-  Please ignore capitalization and punctuation errors. Do not make any corrections related to punctuation (e.g., periods, commas). Focus on grammar, vocabulary, and overall coherence.`;
+  Please ignore capitalization and punctuation errors. Do not make any corrections related to punctuation. Focus on grammar, vocabulary, and overall coherence.`;
 
     const userMessage = `My text is: ${text}.
   ${question ? `The topic is: ${question}.` : ''}
@@ -144,7 +144,7 @@ export class OpenaiService {
   {
       "status": "success" if the analysis is successful, "failed" otherwise,
       "overall_comment": "General feedback on the text about grammar, vocabulary and coherence, without addressing punctuation errors.",
-      "updated_text": "Updated text with the user's errors fixed and enhancements, without changing punctuation.",
+      "updated_text": "Updated text with the user's errors fixed and enhancements, without changing punctuation. Please don't add any punctuations.",
       "translated_updated_text": "Translate the updated text into ${user.native_language}.",
       "suggestions": [
         "Suggestion 1 for improving the text",
