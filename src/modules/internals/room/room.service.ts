@@ -82,6 +82,12 @@ export class RoomService {
           name: data.name,
         };
 
+        await this.firestoreService.addFirestoreRoom(addRoomData);
+
+        const roomMember = await this.roomMemberService.findFirstMemberInRoom(
+          room.id,
+        );
+
         const addFirestoreRoomMemberData: AddFirestoreRoomMemberDto = {
           roomId: room.id.toString(),
           fullName: user.full_name,
@@ -90,9 +96,8 @@ export class RoomService {
           isHost: true,
         };
 
-        await this.firestoreService.addFirestoreRoom(addRoomData);
-
         await this.firestoreService.addFirestoreRoomMember(
+          roomMember.id.toString(),
           addFirestoreRoomMemberData,
         );
 
@@ -168,12 +173,13 @@ export class RoomService {
           throw new BadRequestException(ErrorMessages.ROOM.FULL_ROOM);
         }
 
-        const roomMember = await this.roomMemberService.byRoomIdAndUserId(
-          existingActiveRoom.id,
-          user.id,
-        );
+        const existingRoomMember =
+          await this.roomMemberService.byRoomIdAndUserId(
+            existingActiveRoom.id,
+            user.id,
+          );
 
-        if (roomMember) {
+        if (existingRoomMember) {
           throw new ConflictException(ErrorMessages.ROOM.USER_ALREADY_IN_ROOM);
         }
 
@@ -203,7 +209,7 @@ export class RoomService {
           newMemberAmount,
         );
 
-        await this.roomMemberService.addRoomMember({
+        const roomMember = await this.roomMemberService.addRoomMember({
           userId: user.id,
           roomId: existingActiveRoom.id,
           isHost: false,
@@ -227,6 +233,7 @@ export class RoomService {
 
         // sync room members to firestore
         await this.firestoreService.addFirestoreRoomMember(
+          roomMember.id.toString(),
           addFirestoreRoomMemberData,
         );
       });
@@ -253,14 +260,9 @@ export class RoomService {
           throw new NotFoundException(ErrorMessages.ROOM.USER_NOT_IN_ROOM);
         }
 
-        if (roomMember.is_host) {
-          // if the user is the host, then the room should be ended
-          await this.roomMemberService.removeManyMember(existingActiveRoom.id);
+        if (existingActiveRoom.current_member_amount === 1) {
           await this.roomRepository.endRoom(existingActiveRoom.id);
           await this.firestoreService.deleteFireStoreRoom(
-            existingActiveRoom.id.toString(),
-          );
-          await this.firestoreService.deleteFirestoreRoomMemberForHost(
             existingActiveRoom.id.toString(),
           );
 
@@ -270,25 +272,42 @@ export class RoomService {
             request.videoSDKToken,
           );
 
+          await this.roomMemberService.removeRoomMember(roomMember.id);
+          await this.firestoreService.deleteFirestoreRoomMember(
+            existingActiveRoom.id.toString(),
+            user.id,
+          );
+
           // end videoSDK sessions
           await this.videoSDKService.endSession(
             existingActiveRoom.video_sdk_room_id,
             request.videoSDKToken,
           );
         } else {
-          // if the user is not the host, then just remove the user from the room
-          // decrement the current_member_amount
-
           await this.roomMemberService.removeRoomMember(roomMember.id);
-
-          await this.roomRepository.updateCurrentMemberAmount(
-            existingActiveRoom.id,
-            existingActiveRoom.current_member_amount - 1,
-          );
-
           await this.firestoreService.deleteFirestoreRoomMember(
             existingActiveRoom.id.toString(),
             user.id,
+          );
+
+          const nextHostRoomMember =
+            await this.roomMemberService.updateToNewHostMemberInRoom(
+              existingActiveRoom.id,
+            );
+
+          await this.roomRepository.updateCurrentMemberAmountAndHostUser(
+            existingActiveRoom.id,
+            existingActiveRoom.current_member_amount - 1,
+            nextHostRoomMember.user_id,
+          );
+
+          await this.firestoreService.updateCurrentMemberAmountInRoom(
+            existingActiveRoom.id.toString(),
+            existingActiveRoom.current_member_amount - 1,
+          );
+
+          await this.firestoreService.updateRoomMemberToHost(
+            nextHostRoomMember.id.toString(),
           );
         }
       });
