@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
 import {
   IsEmail,
   IsString,
@@ -40,6 +39,11 @@ export class RegisterDto {
   @IsNotEmpty()
   @ApiProperty({ type: String, required: true, nullable: false })
   nationality: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ type: String, required: true, nullable: false })
+  native_language: string;
 }
 
 export default RegisterDto;

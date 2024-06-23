@@ -132,27 +132,27 @@ export class OpenaiService {
     const { question, text } = data;
 
     const systemMessage = `You are an English text analysis expert, focusing on grammar, writing, speaking, and vocabulary. 
-    You are here to help students improve their writing and speaking skills, and provide feedback on their texts. 
-    The provided text was transcribed from a student who is speaking in English. 
-    The format of this test is similar to the IELTS part 2 speaking test, but the topic is optional. In that case, just focus on the text provided by the user. 
-    You should provide feedback on the student’s speaking and suggest ways to improve.
-    You can ignore capitalization and punctuation error`;
+  You are here to help students improve their writing and speaking skills, and provide feedback on their texts. 
+  The provided text was transcribed from a student who is speaking in English. 
+  The format of this test is similar to the IELTS part 2 speaking test, but the topic is optional. In that case, just focus on the text provided by the user. 
+  You should provide feedback on the student’s speaking and suggest ways to improve.
+  Please ignore capitalization and punctuation errors. Do not make any corrections related to punctuation (e.g., periods, commas). Focus on grammar, vocabulary, and overall coherence.`;
 
     const userMessage = `My text is: ${text}.
-    ${question ? `The topic is: ${question}.` : ''}
-    Please format the response as a JSON object with the following structure:
-    {
-        "status": "success" if the analysis is successful, "failed" otherwise,
-        "overall_comment": "General feedback on the text about grammar, vocabulary and give for user the error in the text.",
-        "updated_text": "Updated text with the user's errors fixed and enhancements.",
-        "translated_updated_text": Translate the updated text into ${user.native_language}."
-        "suggestions": [
-          "Suggestion 1 for improving the text",
-          "Suggestion 2 for improving the text",
-          ...
-        ],
-        "relevance_to_question": "Does the text '${text}' match the topic '${question}'? Please answer with 'Yes' or 'No'. If no question is provided, write 'N/A'."
-    }`;
+  ${question ? `The topic is: ${question}.` : ''}
+  Please format the response as a JSON object with the following structure:
+  {
+      "status": "success" if the analysis is successful, "failed" otherwise,
+      "overall_comment": "General feedback on the text about grammar, vocabulary and coherence, without addressing punctuation errors.",
+      "updated_text": "Updated text with the user's errors fixed and enhancements, without changing punctuation.",
+      "translated_updated_text": "Translate the updated text into ${user.native_language}.",
+      "suggestions": [
+        "Suggestion 1 for improving the text",
+        "Suggestion 2 for improving the text",
+        ...
+      ],
+      "relevance_to_question": "Does the text '${text}' match the topic '${question}'? Please answer with 'Yes' or 'No'. If no question is provided, write 'N/A'."
+  }`;
 
     try {
       const response = await this.openai.chat.completions.create({
