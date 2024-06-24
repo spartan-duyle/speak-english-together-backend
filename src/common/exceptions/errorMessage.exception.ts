@@ -29,6 +29,9 @@ export const ErrorMessages = {
     CAN_NOT_JOIN_ROOM: 'Can not join this room',
     USER_NOT_IN_ROOM: 'User not in the room',
     USER_IS_JOINING_ANOTHER_ROOM: 'You are joining another room',
+    DONT_HAVE_PERMISSION_REMOVE_ROOM:
+      "You don't have permission to remove this user",
+    CANT_REMOVE_YOURSELF: "You can't remove yourself from the room",
   },
 
   FOLLOWER: {

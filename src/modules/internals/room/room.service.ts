@@ -25,6 +25,7 @@ import { PrismaService } from '@/database/prisma/prisma.serivce';
 import LeaveRoomDto from '@/modules/internals/room/dto/leaveRoom.dto';
 import { OpenaiService } from '@/modules/internals/openai/openai.service';
 import { AddFirestoreRoomDto } from '@/modules/externals/firebase/dto/addFirestoreRoom.dto';
+import RemoveRoomMemberDto from '@/modules/internals/room/dto/removeRoomMember.dto';
 
 @Injectable()
 export class RoomService {
@@ -343,6 +344,51 @@ export class RoomService {
       user,
       room.topic.name,
       refresh,
+    );
+  }
+
+  async removeMember(userId: number, data: RemoveRoomMemberDto) {
+    const roomActive = await this.roomRepository.getRoomDetails(data.room_id);
+
+    if (!roomActive) {
+      throw new NotFoundException(ErrorMessages.ROOM.NOT_FOUND);
+    }
+
+    if (roomActive.host_user_id !== userId) {
+      throw new BadRequestException(
+        ErrorMessages.ROOM.DONT_HAVE_PERMISSION_REMOVE_ROOM,
+      );
+    }
+
+    if (userId === data.user_id) {
+      throw new BadRequestException(ErrorMessages.ROOM.CANT_REMOVE_YOURSELF);
+    }
+
+    const roomMember = await this.roomMemberService.byRoomIdAndUserId(
+      data.room_id,
+      data.user_id,
+    );
+
+    if (!roomMember) {
+      throw new NotFoundException(ErrorMessages.ROOM.USER_NOT_IN_ROOM);
+    }
+
+    await this.roomMemberService.removeRoomMember(roomMember.id);
+
+    await this.firestoreService.deleteFirestoreRoomMember(
+      data.room_id.toString(),
+      data.user_id,
+    );
+
+    const newMemberAmount = roomActive.current_member_amount - 1;
+    await this.roomRepository.updateCurrentMemberAmount(
+      data.room_id,
+      newMemberAmount,
+    );
+
+    await this.firestoreService.updateCurrentMemberAmountInRoom(
+      data.room_id.toString(),
+      newMemberAmount,
     );
   }
 }
