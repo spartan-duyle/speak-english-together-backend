@@ -33,6 +33,7 @@ import { ListRoomResponse } from './response/listRoom.response';
 import { JoinRoomDto } from './dto/joinRoom.dto';
 import { RoomResponse } from '@/modules/internals/room/response/room.response';
 import LeaveRoomDto from '@/modules/internals/room/dto/leaveRoom.dto';
+import RemoveRoomMemberDto from '@/modules/internals/room/dto/removeRoomMember.dto';
 
 @Controller('room')
 @ApiTags('room')
@@ -205,11 +206,19 @@ export class RoomController {
     @Param('id') roomId: number,
     @Query('refresh') refresh: boolean = false,
   ) {
-    console.log('userPayload: ', user);
     return await this.roomService.generateSpeakingSentence(
       user,
       roomId,
       refresh,
     );
+  }
+
+  @Post('remove-member')
+  @UseGuards(UserGuard, VerifyGuard)
+  async removeMember(
+    @GetUser() user: UserPayload,
+    @Body() data: RemoveRoomMemberDto,
+  ): Promise<void> {
+    return await this.roomService.removeMember(user.id, data);
   }
 }
