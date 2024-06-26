@@ -174,7 +174,7 @@ export class RoomController {
     @Param('id') id: number,
     @Body() request: LeaveRoomDto,
   ): Promise<void> {
-    await this.roomService.leaveRoom(user, id, request);
+    await this.roomService.leaveRoom(user.id, id, request);
   }
 
   @Get(':id')
@@ -220,5 +220,36 @@ export class RoomController {
     @Body() data: RemoveRoomMemberDto,
   ): Promise<void> {
     return await this.roomService.removeMember(user.id, data);
+  }
+
+  @Post('auto-leave')
+  @HttpCode(200)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Auto leave a room' })
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'The ID of the room to leave',
+    type: Number,
+  })
+  @ApiParam({
+    name: 'userId',
+    required: true,
+    description: 'The id of user was auto leave',
+    type: Number,
+  })
+  @ApiOkResponse({
+    status: 200,
+    description: 'Left room successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @UseGuards(UserGuard, VerifyGuard)
+  async autoLeaveRoom(
+    @Query('userId') userId: number,
+    @Query('roomId') id: number,
+    @Body() request: LeaveRoomDto,
+  ): Promise<void> {
+    return await this.roomService.leaveRoom(userId, id, request);
   }
 }

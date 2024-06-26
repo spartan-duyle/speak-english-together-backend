@@ -243,7 +243,7 @@ export class RoomService {
     }
   }
 
-  async leaveRoom(user: UserPayload, roomId: number, request: LeaveRoomDto) {
+  async leaveRoom(userId: number, roomId: number, request: LeaveRoomDto) {
     try {
       return await this.prisma.$transaction(async () => {
         const existingActiveRoom = await this.roomRepository.byId(roomId);
@@ -254,7 +254,7 @@ export class RoomService {
 
         const roomMember = await this.roomMemberService.byRoomIdAndUserId(
           existingActiveRoom.id,
-          user.id,
+          userId,
         );
 
         if (!roomMember) {
@@ -276,7 +276,7 @@ export class RoomService {
           await this.roomMemberService.removeRoomMember(roomMember.id);
           await this.firestoreService.deleteFirestoreRoomMember(
             existingActiveRoom.id.toString(),
-            user.id,
+            userId,
           );
 
           // end videoSDK sessions
@@ -288,7 +288,7 @@ export class RoomService {
           await this.roomMemberService.removeRoomMember(roomMember.id);
           await this.firestoreService.deleteFirestoreRoomMember(
             existingActiveRoom.id.toString(),
-            user.id,
+            userId,
           );
 
           const nextHostRoomMember =
