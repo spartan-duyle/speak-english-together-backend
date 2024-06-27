@@ -279,7 +279,7 @@ export class OpenaiService {
     }
 
     // Cache the result
-    await this.cacheService.set(cacheKey, cachedSentences, 7200 * 1000);
+    await this.cacheService.set(cacheKey, cachedSentences, 86400 * 1000);
 
     return cachedSentences;
   }
